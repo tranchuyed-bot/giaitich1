@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#ffffff" id="themeColorMeta">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="format-detection" content="telephone=no">
 <title>Giải tích 1 · Mục lục thông minh</title>
+
+<!-- PDF.js: render PDF bằng JS → nhảy trang chính xác trên mọi thiết bị kể cả iPhone -->
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <script>
   (function () {
     try {
@@ -21,6 +22,7 @@
     } catch (e) {}
   })();
 </script>
+
 <style>
   *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -37,18 +39,17 @@
     --surface: #ffffff;
     --surface-2: #f7f9fc;
     --surface-3: #eef2f8;
-
     --text: #1a2333;
     --text-soft: #475569;
     --muted: #94a3b8;
     --border: #e2e8f0;
     --border-2: #cbd5e1;
     --mark: rgba(255, 213, 0, 0.45);
+    --canvas-bg: #525659;
 
-    --toc-w: 340px;
+    --sidebar-w: 340px;
     --header-h: 56px;
 
-    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
     --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
     --shadow-lg: 0 16px 40px -12px rgba(15, 23, 42, 0.18);
 
@@ -74,17 +75,16 @@
     --border: #232c42;
     --border-2: #33405c;
     --mark: rgba(255, 213, 0, 0.35);
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --canvas-bg: #1a1a1a;
     --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
   }
 
-  html { height: 100%; height: -webkit-fill-available; }
+  html { height: 100%; }
 
   body {
     margin: 0;
     height: 100%;
-    min-height: -webkit-fill-available;
     font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 14px;
     line-height: 1.5;
@@ -92,15 +92,12 @@
     background: var(--bg);
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
-    -webkit-text-size-adjust: 100%;
     overscroll-behavior: none;
   }
 
   button { font-family: inherit; touch-action: manipulation; }
-  input, button, a { -webkit-tap-highlight-color: transparent; }
   a { color: inherit; text-decoration: none; }
 
-  /* ============ APP LAYOUT ============ */
   .app {
     display: flex;
     height: 100vh;
@@ -108,42 +105,26 @@
     overflow: hidden;
   }
 
-  .screen {
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    flex: 0 0 var(--sidebar-w);
+    width: var(--sidebar-w);
     display: flex;
     flex-direction: column;
-    height: 100%;
-    min-width: 0;
-  }
-
-  .screen-toc {
-    flex: 0 0 var(--toc-w);
-    width: var(--toc-w);
     background: var(--surface);
     border-right: 1px solid var(--border);
-    z-index: 20;
     padding-top: env(safe-area-inset-top, 0px);
     padding-left: env(safe-area-inset-left, 0px);
+    z-index: 20;
   }
 
-  .screen-pdf {
-    flex: 1;
-    background: var(--surface);
-    z-index: 30;
-  }
-
-  /* ============ TOC HEADER ============ */
-  .toc-head {
+  .sidebar-head {
     flex-shrink: 0;
     padding: 14px 16px 12px;
     border-bottom: 1px solid var(--border);
   }
 
-  .brand-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
+  .brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 
   .brand-logo {
     flex: 0 0 40px;
@@ -158,11 +139,11 @@
   }
 
   .brand-text { flex: 1; min-width: 0; }
-  .brand-title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; }
+  .brand-title { font-size: 15px; font-weight: 800; line-height: 1.15; }
   .brand-sub { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .icon-btn {
-    flex: 0 0 auto;
+    flex: 0 0 38px;
     width: 38px; height: 38px;
     display: inline-flex;
     align-items: center;
@@ -178,7 +159,6 @@
   .icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .icon-btn:disabled { opacity: 0.35; }
 
-  /* Search */
   .search-wrap { position: relative; margin-bottom: 10px; }
   .search-icon {
     position: absolute;
@@ -198,18 +178,14 @@
     border-radius: 10px;
     background: var(--surface-2);
     color: var(--text);
-    font-size: 16px;
-    font-family: inherit;
+    font-size: 16px; /* iOS: không tự zoom */
     outline: none;
     -webkit-appearance: none;
-    appearance: none;
     transition: border-color .15s var(--ease), background .15s var(--ease), box-shadow .15s var(--ease);
   }
   #searchInput::placeholder { color: var(--muted); font-size: 13px; }
   #searchInput:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--primary-soft); }
-  #searchInput::-webkit-search-cancel-button { cursor: pointer; }
 
-  /* Progress */
   .progress-row {
     display: flex;
     align-items: center;
@@ -221,12 +197,7 @@
   }
   .progress-count { color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
 
-  .progress-track {
-    height: 5px;
-    border-radius: 999px;
-    background: var(--surface-3);
-    overflow: hidden;
-  }
+  .progress-track { height: 5px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
   .progress-fill {
     height: 100%;
     width: 0%;
@@ -251,7 +222,7 @@
   }
   .action-btn:active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
 
-  /* ============ TOC LIST ============ */
+  /* ===== TOC ===== */
   .toc-scroll {
     flex: 1;
     overflow-y: auto;
@@ -289,7 +260,6 @@
     text-align: left;
     cursor: pointer;
     user-select: none;
-    -webkit-user-select: none;
   }
   .chapter-head:active { background: var(--surface-2); }
 
@@ -348,7 +318,6 @@
     border-radius: 8px 0 0 8px;
     cursor: pointer;
     user-select: none;
-    -webkit-user-select: none;
     transition: color .15s var(--ease);
   }
   .section-link:active { background: var(--surface-3); }
@@ -404,16 +373,20 @@
   }
   .section-item.completed .check-box svg { stroke-dashoffset: 0; }
   .section-item.completed .section-link { color: var(--muted); }
-  .section-item.completed .section-title {
-    text-decoration: line-through;
-    text-decoration-thickness: 1.5px;
-    text-decoration-color: var(--muted);
-  }
+  .section-item.completed .section-title { text-decoration: line-through; text-decoration-color: var(--muted); text-decoration-thickness: 1.5px; }
   .section-item.completed .section-page { opacity: .6; }
 
   mark { background: var(--mark); color: inherit; padding: 0 1px; border-radius: 2px; }
 
-  /* ============ PDF HEADER ============ */
+  /* ===== PDF VIEWER ===== */
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+  }
+
   .pdf-head {
     flex-shrink: 0;
     display: flex;
@@ -425,12 +398,10 @@
     border-bottom: 1px solid var(--border);
     padding-top: calc(8px + env(safe-area-inset-top, 0px));
     padding-right: calc(10px + env(safe-area-inset-right, 0px));
-    position: relative;
-    z-index: 5;
   }
 
   .back-btn {
-    display: none; /* Ẩn trên desktop, hiện trên mobile */
+    display: none;
     flex: 0 0 40px;
     width: 40px; height: 40px;
     align-items: center;
@@ -440,7 +411,6 @@
     background: var(--surface);
     color: var(--text-soft);
     cursor: pointer;
-    transition: all .15s var(--ease);
   }
   .back-btn:active { background: var(--surface-3); }
   .back-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
@@ -462,11 +432,7 @@
   .nav-btn:disabled { opacity: 0.3; }
   .nav-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
-  .title-block {
-    flex: 1;
-    min-width: 0;
-    padding: 0 4px;
-  }
+  .title-block { flex: 1; min-width: 0; padding: 0 4px; }
   .title-kicker {
     font-size: 10px;
     font-weight: 600;
@@ -519,182 +485,171 @@
     background: var(--surface);
     color: var(--text-soft);
     cursor: pointer;
-    transition: all .15s var(--ease);
   }
   .open-ext-btn:active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
   .open-ext-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* ============ PDF BODY ============ */
   .pdf-body {
     flex: 1;
     position: relative;
-    background: #525659;
+    background: var(--canvas-bg);
     min-height: 0;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
-  [data-theme="dark"] .pdf-body { background: #1a1a1a; }
 
-  #pdfFrame {
-    width: 100%;
-    height: 100%;
-    border: 0;
+  #pdfCanvas {
     display: block;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    max-width: 100%;
   }
 
-  .pdf-loading {
+  .pdf-empty {
     position: absolute;
     inset: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    background: var(--surface-2);
+    gap: 12px;
+    padding: 24px;
+    color: #e2e8f0;
+    text-align: center;
+    font-size: 13px;
+  }
+  .pdf-empty svg { width: 48px; height: 48px; fill: none; stroke: currentColor; stroke-width: 1.5; opacity: .6; }
+  .pdf-empty p { margin: 0; max-width: 280px; line-height: 1.5; }
+
+  .pdf-loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: var(--surface);
     color: var(--text-soft);
     font-size: 13px;
     font-weight: 600;
     opacity: 0;
     visibility: hidden;
     transition: opacity .2s var(--ease), visibility .2s var(--ease);
-    pointer-events: none;
-    z-index: 3;
+    z-index: 5;
   }
-  .pdf-loading.active { opacity: 1; visibility: visible; }
+  .pdf-loading-overlay.active { opacity: 1; visibility: visible; }
 
-  .pdf-loading .spinner {
-    width: 18px; height: 18px;
+  .spinner {
+    width: 32px; height: 32px;
     border-radius: 50%;
-    border: 2.5px solid var(--border-2);
+    border: 3px solid var(--border-2);
     border-top-color: var(--primary);
     animation: spin .7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Fallback hint (mobile — sau 3.5s không thấy PDF) */
-  .pdf-fallback {
+  .pdf-error {
     position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    padding: 12px 14px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.96);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
-    display: flex;
+    inset: 0;
+    display: none;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    font-size: 12.5px;
-    color: var(--text);
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    background: var(--surface);
+    text-align: center;
     z-index: 6;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(8px);
-    transition: all .3s var(--ease);
   }
-  [data-theme="dark"] .pdf-fallback { background: rgba(26, 33, 51, 0.96); }
-  .pdf-fallback.visible { opacity: 1; visibility: visible; transform: none; }
-  .pdf-fallback-icon {
-    flex: 0 0 32px;
-    width: 32px; height: 32px;
+  .pdf-error.show { display: flex; }
+  .pdf-error-icon {
+    width: 56px; height: 56px;
     display: grid; place-items: center;
-    border-radius: 9px;
+    border-radius: 16px;
     background: var(--primary-soft);
     color: var(--primary);
   }
-  .pdf-fallback-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-  .pdf-fallback-text { flex: 1; line-height: 1.35; }
-  .pdf-fallback-text strong { font-weight: 700; }
-  .pdf-fallback-btn {
-    flex: 0 0 auto;
-    padding: 8px 12px;
+  .pdf-error-icon svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .pdf-error h3 { margin: 0; font-size: 15px; font-weight: 700; color: var(--text); }
+  .pdf-error p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; max-width: 320px; }
+  .pdf-error-btn {
+    padding: 10px 20px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 10px;
     background: linear-gradient(135deg, var(--primary), var(--primary-2));
     color: #fff;
     font-family: inherit;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
+    box-shadow: 0 8px 20px -8px var(--primary-glow);
   }
-  .pdf-fallback-btn:active { opacity: .9; }
+  .pdf-error-btn:active { transform: scale(0.96); }
 
-  /* File protocol warning */
-  .alert-banner {
-    display: none;
-    padding: 10px 12px;
-    background: #fef3c7;
-    color: #78350f;
-    border-bottom: 1px solid #fcd34d;
+  .page-indicator {
+    position: absolute;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
     font-size: 12px;
-    line-height: 1.4;
-    gap: 8px;
-    align-items: flex-start;
-    flex-shrink: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .3s var(--ease);
+    z-index: 4;
   }
-  [data-theme="dark"] .alert-banner {
-    background: #3a2a08;
-    color: #fcd34d;
-    border-bottom-color: #78350f;
-  }
-  .alert-banner.show { display: flex; }
-  .alert-banner svg {
-    flex: 0 0 16px;
-    width: 16px; height: 16px;
-    margin-top: 1px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-  }
+  .page-indicator.show { opacity: 1; }
 
-  /* ============ MOBILE OVERRIDES ============ */
+  .icon-sun { display: none; }
+  [data-theme="dark"] .icon-sun { display: block; }
+  [data-theme="dark"] .icon-moon { display: none; }
+
+  /* ===== MOBILE ===== */
   @media (max-width: 860px) {
-    .app {
-      display: block;
-      position: relative;
-      overflow: hidden;
-    }
+    .app { display: block; position: relative; }
 
-    .screen {
+    .sidebar {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0; left: 0; bottom: 0;
       width: 100%;
+      max-width: 100%;
       height: 100dvh;
+      border-right: 0;
+      z-index: 20;
+      transform: translateX(0);
       transition: transform .34s var(--ease);
       will-change: transform;
     }
 
-    .screen-toc {
-      transform: translateX(0);
-      border-right: 0;
-      z-index: 20;
-    }
-
-    .screen-pdf {
+    .content {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%;
+      height: 100dvh;
       transform: translateX(100%);
-      z-index: 30;
+      transition: transform .34s var(--ease);
+      will-change: transform;
       box-shadow: -12px 0 32px rgba(0, 0, 0, 0.18);
+      z-index: 30;
+      background: var(--surface);
     }
 
-    .app.pdf-open .screen-pdf { transform: translateX(0); }
+    .app.pdf-open .content { transform: translateX(0); }
 
-    /* Hiện back button trên mobile */
     .back-btn { display: inline-flex; }
-
-    /* Nút check trong header PDF chỉ hiện trên mobile */
     .pdf-check-btn { display: inline-flex; }
 
-    /* Ẩn nút "Mở rộng" chỉ-dành-desktop trong header PDF mobile nếu không cần */
-    /* Trên mobile, "Mở rộng" là nút chính để thoát khỏi iframe lỗi */
-    .open-ext-btn {
-      background: var(--primary-soft);
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-
-    /* Tăng kích thước touch */
     .nav-btn { width: 42px; height: 42px; flex-basis: 42px; }
     .back-btn { width: 42px; height: 42px; flex-basis: 42px; }
     .pdf-check-btn { width: 42px; height: 42px; flex-basis: 42px; }
@@ -702,35 +657,12 @@
   }
 
   @media (min-width: 861px) {
-    /* Trên desktop ẩn nút check trong header PDF (đã có trong TOC) */
     .pdf-check-btn { display: none; }
-  }
-
-  /* ============ VÙNG VUỐT CẠNH TRÁI (đóng PDF trên mobile) ============ */
-  .edge-swipe {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 22px;
-    z-index: 15;
-    touch-action: pan-y;
-  }
-
-  @media (max-width: 860px) {
-    .edge-swipe { display: block; }
-  }
-
-  /* ============ iOS SMALL / OLD ============ */
-  @supports not (height: 100dvh) {
-    @media (max-width: 860px) {
-      .screen { height: 100vh; }
-    }
+    .pdf-empty-mobile { display: none; }
   }
 
   @media (max-width: 380px) {
-    .toc-head { padding: 12px 12px 10px; }
+    .sidebar-head { padding: 12px 12px 10px; }
     .brand-title { font-size: 14px; }
     .brand-logo { width: 36px; height: 36px; font-size: 19px; }
     .section-link { font-size: 12.5px; padding: 9px 4px 9px 8px; }
@@ -743,16 +675,14 @@
     }
   }
 
-  /* Landscape phone */
   @media (max-height: 480px) and (orientation: landscape) {
-    .toc-head { padding-top: 8px; padding-bottom: 8px; }
+    .sidebar-head { padding-top: 8px; padding-bottom: 8px; }
     .brand-row { margin-bottom: 8px; }
     .brand-logo { width: 32px; height: 32px; font-size: 17px; border-radius: 9px; }
     .brand-sub { display: none; }
     .actions-row { display: none; }
     .search-wrap { margin-bottom: 6px; }
     #searchInput { height: 34px; font-size: 15px; }
-    .progress-row { margin-bottom: 3px; }
   }
 
   @media (hover: hover) {
@@ -763,10 +693,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: .001ms !important;
-      transition-duration: .001ms !important;
-    }
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
   }
 </style>
 </head>
@@ -783,9 +710,9 @@
 
 <div class="app" id="app">
 
-  <!-- ============ MÀN HÌNH 1: MỤC LỤC ============ -->
-  <section class="screen screen-toc" id="screenToc">
-    <header class="toc-head">
+  <!-- ===== SIDEBAR / TOC ===== -->
+  <aside class="sidebar" id="sidebar">
+    <header class="sidebar-head">
       <div class="brand-row">
         <div class="brand-logo" aria-hidden="true">∫</div>
         <div class="brand-text">
@@ -794,7 +721,7 @@
         </div>
         <button class="icon-btn" id="themeToggle" type="button" aria-label="Đổi giao diện">
           <svg class="icon-moon" viewBox="0 0 24 24"><path d="M20.5 14.6A8.5 8.5 0 1 1 9.4 3.5a7 7 0 0 0 11.1 11.1z"/></svg>
-          <svg class="icon-sun" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
         </button>
       </div>
 
@@ -816,23 +743,17 @@
     </header>
 
     <nav class="toc-scroll" id="tocScroll" aria-label="Mục lục"></nav>
-  </section>
+  </aside>
 
-  <!-- ============ MÀN HÌNH 2: PDF ============ -->
-  <section class="screen screen-pdf" id="screenPdf">
-
-    <!-- Cảnh báo file:// trên mobile -->
-    <div class="alert-banner" id="fileWarning">
-      <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
-      <span>Bạn đang mở trực tiếp file HTML. Hãy dùng nút <strong>Mở ngoài</strong> (↗) để xem PDF, hoặc đặt file trên web server.</span>
-    </div>
+  <!-- ===== PDF VIEWER ===== -->
+  <main class="content" id="content">
 
     <header class="pdf-head">
       <button class="back-btn" id="backBtn" type="button" aria-label="Quay lại mục lục">
         <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
 
-      <button class="nav-btn" id="prevBtn" type="button" aria-label="Mục trước" title="Mục trước">
+      <button class="nav-btn" id="prevBtn" type="button" aria-label="Trang trước" disabled>
         <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
 
@@ -841,43 +762,44 @@
         <div class="title-main" id="currentTitle">Chọn một mục</div>
       </div>
 
-      <button class="nav-btn" id="nextBtn" type="button" aria-label="Mục tiếp" title="Mục tiếp">
+      <button class="nav-btn" id="nextBtn" type="button" aria-label="Trang tiếp" disabled>
         <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
       </button>
 
-      <button class="pdf-check-btn" id="pdfCheckBtn" type="button" aria-label="Đánh dấu đã học" aria-pressed="false">
+      <button class="pdf-check-btn" id="pdfCheckBtn" type="button" aria-pressed="false" aria-label="Đánh dấu đã học">
         <svg viewBox="0 0 24 24"><path d="M4 12.6l5.2 5.2L20 6.6"/></svg>
       </button>
 
-      <a class="open-ext-btn" id="openExtBtn" href="#" target="_blank" rel="noopener" aria-label="Mở PDF ngoài" title="Mở bằng trình xem PDF">
+      <a class="open-ext-btn" id="openExtBtn" href="#" target="_blank" rel="noopener" aria-label="Mở bằng ứng dụng xem PDF">
         <svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>
       </a>
     </header>
 
     <div class="pdf-body" id="pdfBody">
-      <iframe id="pdfFrame" title="Nội dung PDF" loading="eager"></iframe>
+      <canvas id="pdfCanvas"></canvas>
 
-      <div class="pdf-loading" id="pdfLoading">
+      <div class="pdf-empty" id="pdfEmpty">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h2"/></svg>
+        <p>Chọn một mục ở cột bên trái<br>để mở đúng trang PDF.</p>
+      </div>
+
+      <div class="pdf-loading-overlay" id="pdfLoading">
         <div class="spinner"></div>
-        <span>Đang mở trang...</span>
+        <span id="loadingText">Đang tải PDF...</span>
       </div>
 
-      <!-- Fallback hint: hiện sau 3.5s nếu PDF không load -->
-      <div class="pdf-fallback" id="pdfFallback">
-        <div class="pdf-fallback-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      <div class="pdf-error" id="pdfError">
+        <div class="pdf-error-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
         </div>
-        <div class="pdf-fallback-text">
-          <strong>PDF không hiển thị?</strong><br>
-          Thử mở bằng ứng dụng xem PDF.
-        </div>
-        <button class="pdf-fallback-btn" id="fallbackOpen" type="button">Mở ngoài</button>
+        <h3>Không thể tải PDF trong ứng dụng</h3>
+        <p id="pdfErrorMsg">Có thể do trình duyệt chặn tải file khi mở trực tiếp. Hãy thử mở bằng ứng dụng xem PDF bên ngoài.</p>
+        <button class="pdf-error-btn" id="pdfErrorBtn" type="button">Mở bằng ứng dụng khác</button>
       </div>
 
-      <!-- Vùng vuốt cạnh trái để đóng PDF trên mobile -->
-      <div class="edge-swipe" id="edgeSwipe" aria-hidden="true"></div>
+      <div class="page-indicator" id="pageIndicator">Trang 1</div>
     </div>
-  </section>
+  </main>
 
 </div>
 
@@ -885,60 +807,56 @@
 (function () {
   'use strict';
 
-  /* ============ DỮ LIỆU ============ */
+  /* ============ CẤU HÌNH ============ */
   const PDF_FILE = 'Giải tích hàm một biến số (Giải tích 1) - 2013_2.pdf';
+  const PDF_URL = encodeURI(PDF_FILE);
 
   const TOC = [
-    {
-      title: 'Chương 1. Số phức và giới hạn',
-      sections: [
-        { title: '1.1. Số thực', page: 8 },
-        { title: '1.2. Số phức', page: 11 },
-        { title: '1.3. Dãy số thực', page: 22 }
-      ]
-    },
-    {
-      title: 'Chương 2. Phép tính vi phân',
-      sections: [
-        { title: '2.1. Các khái niệm cơ bản', page: 44 },
-        { title: '2.2. Giới hạn của hàm số', page: 49 },
-        { title: '2.3. ĐL Vô cùng bé & Vô cùng lớn', page: 56 },
-        { title: '2.4. Hàm số liên tục', page: 57 },
-        { title: '2.5. Hàm liên tục đều', page: 62 },
-        { title: '2.6. Đạo hàm', page: 65 },
-        { title: '2.7. Vi phân của hàm số', page: 68 },
-        { title: '2.8. Đạo hàm và vi phân cấp cao', page: 68 },
-        { title: '2.9. Công thức Taylor', page: 76 },
-        { title: "2.10. Quy tắc L'Hospital", page: 80 },
-        { title: '2.11. Hàm lồi', page: 82 }
-      ]
-    },
-    {
-      title: 'Chương 3. Phép tính tích phân',
-      sections: [
-        { title: '3.1. Tích phân xác định', page: 96 },
-        { title: '3.2. Tính chất', page: 102 },
-        { title: '3.3. Nguyên hàm và TP xác định', page: 104 },
-        { title: '3.4. Các phương pháp tính', page: 107 },
-        { title: '3.5. Tích phân hàm phân thức hữu tỷ', page: 111 },
-        { title: '3.6. Tích phân hàm lượng giác', page: 114 },
-        { title: '3.7. Một vài ứng dụng', page: 117 },
-        { title: '3.8. Tích phân suy rộng cận vô hạn', page: 127 },
-        { title: '3.9. Tích phân suy rộng cận hữu hạn', page: 133 }
-      ]
-    },
-    {
-      title: 'Chương 4. Chuỗi số và chuỗi hàm',
-      sections: [
-        { title: '4.1. Chuỗi số', page: 146 },
-        { title: '4.2. Chuỗi số dương', page: 149 },
-        { title: '4.3. Chuỗi đan dấu', page: 154 },
-        { title: '4.4. Chuỗi hàm', page: 156 },
-        { title: '4.5. Chuỗi lũy thừa', page: 164 },
-        { title: '4.6. Chuỗi Fourier', page: 171 }
-      ]
-    }
+    { title: 'Chương 1. Số phức và giới hạn', sections: [
+      { title: '1.1. Số thực', page: 8 },
+      { title: '1.2. Số phức', page: 11 },
+      { title: '1.3. Dãy số thực', page: 22 }
+    ]},
+    { title: 'Chương 2. Phép tính vi phân', sections: [
+      { title: '2.1. Các khái niệm cơ bản', page: 44 },
+      { title: '2.2. Giới hạn của hàm số', page: 49 },
+      { title: '2.3. ĐL Vô cùng bé & Vô cùng lớn', page: 56 },
+      { title: '2.4. Hàm số liên tục', page: 57 },
+      { title: '2.5. Hàm liên tục đều', page: 62 },
+      { title: '2.6. Đạo hàm', page: 65 },
+      { title: '2.7. Vi phân của hàm số', page: 68 },
+      { title: '2.8. Đạo hàm và vi phân cấp cao', page: 68 },
+      { title: '2.9. Công thức Taylor', page: 76 },
+      { title: "2.10. Quy tắc L'Hospital", page: 80 },
+      { title: '2.11. Hàm lồi', page: 82 }
+    ]},
+    { title: 'Chương 3. Phép tính tích phân', sections: [
+      { title: '3.1. Tích phân xác định', page: 96 },
+      { title: '3.2. Tính chất', page: 102 },
+      { title: '3.3. Nguyên hàm và TP xác định', page: 104 },
+      { title: '3.4. Các phương pháp tính', page: 107 },
+      { title: '3.5. Tích phân hàm phân thức hữu tỷ', page: 111 },
+      { title: '3.6. Tích phân hàm lượng giác', page: 114 },
+      { title: '3.7. Một vài ứng dụng', page: 117 },
+      { title: '3.8. Tích phân suy rộng cận vô hạn', page: 127 },
+      { title: '3.9. Tích phân suy rộng cận hữu hạn', page: 133 }
+    ]},
+    { title: 'Chương 4. Chuỗi số và chuỗi hàm', sections: [
+      { title: '4.1. Chuỗi số', page: 146 },
+      { title: '4.2. Chuỗi số dương', page: 149 },
+      { title: '4.3. Chuỗi đan dấu', page: 154 },
+      { title: '4.4. Chuỗi hàm', page: 156 },
+      { title: '4.5. Chuỗi lũy thừa', page: 164 },
+      { title: '4.6. Chuỗi Fourier', page: 171 }
+    ]}
   ];
+
+  /* ============ PDF.JS SETUP ============ */
+  const PDFJS_VERSION = '3.11.174';
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDFJS_VERSION + '/build/pdf.worker.min.js';
+  }
 
   /* ============ FLATTEN ============ */
   const FLAT = [];
@@ -946,16 +864,16 @@
   TOC.forEach(function (ch, ci) {
     ch.sections.forEach(function (s, si) {
       const id = 's-' + ci + '-' + si;
-      const item = { id: id, title: s.title, page: s.page, chapterIdx: ci, sectionIdx: si };
+      const item = { id, title: s.title, page: s.page, chapterIdx: ci, sectionIdx: si };
       FLAT.push(item);
       BY_ID[id] = item;
     });
   });
 
-  /* ============ STORAGE KEYS ============ */
-  const KEY_THEME     = 'giaotich1.viewer.theme';
-  const KEY_DONE      = 'giaotich1.viewer.done';
-  const KEY_LAST      = 'giaotich1.viewer.last';
+  /* ============ STORAGE ============ */
+  const KEY_THEME = 'giaotich1.viewer.theme';
+  const KEY_DONE = 'giaotich1.viewer.done';
+  const KEY_LAST = 'giaotich1.viewer.last';
   const KEY_COLLAPSED = 'giaotich1.viewer.collapsed';
 
   /* ============ STATE ============ */
@@ -963,37 +881,44 @@
   let completed = new Set();
   let collapsed = new Set();
   let filteredQuery = '';
-  let hasNavigated = false;
-  let loadingTimer = null;
-  let fallbackTimer = null;
   let isMobile = window.matchMedia('(max-width: 860px)').matches;
 
+  /* PDF state */
+  let pdfDoc = null;
+  let pdfLoadingPromise = null;
+  let currentPageNum = 0;
+  let currentRenderTask = null;
+  let isRendering = false;
+  let pendingRender = null;
+  let lastRenderedScale = 1;
+
   /* ============ ELEMENTS ============ */
-  const app            = document.getElementById('app');
-  const screenToc      = document.getElementById('screenToc');
-  const screenPdf      = document.getElementById('screenPdf');
-  const tocScroll      = document.getElementById('tocScroll');
-  const searchInput    = document.getElementById('searchInput');
-  const pdfFrame       = document.getElementById('pdfFrame');
-  const pdfBody        = document.getElementById('pdfBody');
-  const pdfLoading     = document.getElementById('pdfLoading');
-  const pdfFallback    = document.getElementById('pdfFallback');
-  const fileWarning    = document.getElementById('fileWarning');
-  const doneBar        = document.getElementById('doneBar');
-  const doneText       = document.getElementById('doneText');
-  const currentKicker  = document.getElementById('currentKicker');
-  const currentTitle   = document.getElementById('currentTitle');
-  const prevBtn        = document.getElementById('prevBtn');
-  const nextBtn        = document.getElementById('nextBtn');
-  const backBtn        = document.getElementById('backBtn');
-  const pdfCheckBtn    = document.getElementById('pdfCheckBtn');
-  const openExtBtn     = document.getElementById('openExtBtn');
-  const fallbackOpen   = document.getElementById('fallbackOpen');
-  const themeToggle    = document.getElementById('themeToggle');
-  const themeColorMeta = document.getElementById('themeColorMeta');
-  const expandAllBtn   = document.getElementById('expandAll');
-  const collapseAllBtn = document.getElementById('collapseAll');
-  const edgeSwipe      = document.getElementById('edgeSwipe');
+  const app           = document.getElementById('app');
+  const sidebar       = document.getElementById('sidebar');
+  const tocScroll     = document.getElementById('tocScroll');
+  const searchInput   = document.getElementById('searchInput');
+  const pdfBody       = document.getElementById('pdfBody');
+  const pdfCanvas     = document.getElementById('pdfCanvas');
+  const pdfEmpty      = document.getElementById('pdfEmpty');
+  const pdfLoading    = document.getElementById('pdfLoading');
+  const loadingText   = document.getElementById('loadingText');
+  const pdfError      = document.getElementById('pdfError');
+  const pdfErrorMsg   = document.getElementById('pdfErrorMsg');
+  const pdfErrorBtn   = document.getElementById('pdfErrorBtn');
+  const pageIndicator = document.getElementById('pageIndicator');
+  const currentKicker = document.getElementById('currentKicker');
+  const currentTitle  = document.getElementById('currentTitle');
+  const prevBtn       = document.getElementById('prevBtn');
+  const nextBtn       = document.getElementById('nextBtn');
+  const backBtn       = document.getElementById('backBtn');
+  const pdfCheckBtn   = document.getElementById('pdfCheckBtn');
+  const openExtBtn    = document.getElementById('openExtBtn');
+  const themeToggle   = document.getElementById('themeToggle');
+  const themeColorMeta= document.getElementById('themeColorMeta');
+  const expandAllBtn  = document.getElementById('expandAll');
+  const collapseAllBtn= document.getElementById('collapseAll');
+  const doneBar       = document.getElementById('doneBar');
+  const doneText      = document.getElementById('doneText');
 
   /* ============ HELPERS ============ */
   function escapeHtml(s) {
@@ -1001,15 +926,6 @@
       return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
     });
   }
-
-  // URL an toàn cho iframe và link ngoài
-  function pageUrl(page) {
-    // encodeURI xử lý khoảng trắng, dấu ngoặc, tiếng Việt
-    return encodeURI(PDF_FILE) + '#page=' + page;
-  }
-
-  // URL cho Google Docs viewer (dùng khi cần fallback trên mobile nếu có public URL)
-  // Không dùng ở đây, nhưng để sẵn nếu cần mở rộng.
 
   function highlightMatch(text, query) {
     if (!query) return escapeHtml(text);
@@ -1033,13 +949,11 @@
       const sectionsHtml = ch.sections.map(function (s, si) {
         const id = 's-' + ci + '-' + si;
         return '<li class="section-item" data-id="' + id + '">' +
-          '<a class="section-link" href="' + pageUrl(s.page) + '" target="_blank" rel="noopener" data-page="' + s.page + '">' +
+          '<a class="section-link" data-page="' + s.page + '">' +
             '<span class="section-title">' + escapeHtml(s.title) + '</span>' +
             '<span class="section-page">tr. ' + s.page + '</span>' +
           '</a>' +
-          '<button class="complete-btn" type="button" aria-pressed="false" ' +
-                  'aria-label="Đánh dấu hoàn thành: ' + escapeHtml(s.title) + '" ' +
-                  'title="Đánh dấu đã học">' +
+          '<button class="complete-btn" type="button" aria-pressed="false" aria-label="Đánh dấu hoàn thành: ' + escapeHtml(s.title) + '">' +
             '<span class="check-box" aria-hidden="true">' +
               '<svg viewBox="0 0 24 24"><path d="M4 12.6l5.2 5.2L20 6.6"/></svg>' +
             '</span>' +
@@ -1060,7 +974,7 @@
     }).join('');
   }
 
-  /* ============ STATE ============ */
+  /* ============ LOAD STATE ============ */
   function loadState() {
     try {
       const arr = JSON.parse(localStorage.getItem(KEY_DONE) || '[]');
@@ -1100,7 +1014,6 @@
       item.classList.toggle('completed', isDone);
       const btn = item.querySelector('.complete-btn');
       btn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
-      btn.title = isDone ? 'Bỏ đánh dấu hoàn thành' : 'Đánh dấu đã học';
     });
     updateProgressUI();
     updatePdfCheckBtn();
@@ -1140,9 +1053,7 @@
     }
 
     const btn = item.querySelector('.complete-btn');
-    const isDone = completed.has(id);
-    btn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
-    btn.title = isDone ? 'Bỏ đánh dấu hoàn thành' : 'Đánh dấu đã học';
+    btn.setAttribute('aria-pressed', completed.has(id) ? 'true' : 'false');
 
     saveDone();
     updateProgressUI();
@@ -1158,146 +1069,198 @@
     const isDone = completed.has(activeId);
     pdfCheckBtn.classList.toggle('is-done', isDone);
     pdfCheckBtn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
-    pdfCheckBtn.setAttribute('aria-label', isDone ? 'Bỏ đánh dấu đã học' : 'Đánh dấu đã học');
   }
 
-  /* ============ ACTIVE / NAV ============ */
+  /* ============ PDF LOADING ============ */
+  function ensurePdfLoaded() {
+    if (pdfDoc) return Promise.resolve(pdfDoc);
+    if (pdfLoadingPromise) return pdfLoadingPromise;
+
+    if (typeof pdfjsLib === 'undefined') {
+      return Promise.reject(new Error('PDF.js chưa tải xong. Kiểm tra kết nối mạng.'));
+    }
+
+    pdfLoadingPromise = pdfjsLib.getDocument({
+      url: PDF_URL,
+      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDFJS_VERSION + '/cmaps/',
+      cMapPacked: true
+    }).promise.then(function (doc) {
+      pdfDoc = doc;
+      return doc;
+    }).catch(function (err) {
+      pdfLoadingPromise = null;
+      throw err;
+    });
+
+    return pdfLoadingPromise;
+  }
+
+  /* ============ PDF RENDER ============ */
+  function showLoading(text) {
+    loadingText.textContent = text || 'Đang tải PDF...';
+    pdfLoading.classList.add('active');
+  }
+  function hideLoading() {
+    pdfLoading.classList.remove('active');
+  }
+  function showError(msg) {
+    pdfErrorMsg.textContent = msg || 'Có lỗi xảy ra khi mở PDF.';
+    pdfError.classList.add('show');
+    hideLoading();
+    pdfEmpty.style.display = 'none';
+    pdfCanvas.style.display = 'none';
+  }
+  function hideError() {
+    pdfError.classList.remove('show');
+    pdfCanvas.style.display = '';
+  }
+
+  async function renderPage(pageNum, opts) {
+    opts = opts || {};
+
+    // Nếu đang render, ghi nhớ page cuối để render tiếp
+    if (isRendering) {
+      pendingRender = pageNum;
+      return;
+    }
+
+    isRendering = true;
+    hideError();
+
+    try {
+      const pdf = await ensurePdfLoaded();
+
+      // Clamp
+      const clampedPage = Math.max(1, Math.min(pageNum, pdf.numPages));
+
+      if (!opts.silent) {
+        showLoading('Đang mở trang ' + clampedPage + '...');
+      }
+
+      const page = await pdf.getPage(clampedPage);
+
+      // Tính scale để fit chiều rộng khung
+      const containerW = pdfBody.clientWidth - 16;
+      const baseViewport = page.getViewport({ scale: 1 });
+      const fitScale = Math.max(0.3, containerW / baseViewport.width);
+      const viewport = page.getViewport({ scale: fitScale });
+
+      // Retina nhưng cap 2x cho hiệu năng
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cssW = viewport.width;
+      const cssH = viewport.height;
+
+      pdfCanvas.width = Math.floor(cssW * dpr);
+      pdfCanvas.height = Math.floor(cssH * dpr);
+      pdfCanvas.style.width = cssW + 'px';
+      pdfCanvas.style.height = cssH + 'px';
+
+      const ctx = pdfCanvas.getContext('2d', { alpha: false });
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Hủy render cũ nếu có
+      if (currentRenderTask) {
+        try { currentRenderTask.cancel(); } catch (e) {}
+        currentRenderTask = null;
+      }
+
+      currentRenderTask = page.render({ canvasContext: ctx, viewport: viewport });
+      await currentRenderTask.promise;
+      currentRenderTask = null;
+
+      currentPageNum = clampedPage;
+      lastRenderedScale = fitScale;
+
+      pdfEmpty.style.display = 'none';
+      pdfCanvas.style.display = 'block';
+
+      updatePageIndicator(clampedPage, pdf.numPages);
+      updateNavButtonsForPage(clampedPage, pdf.numPages);
+
+      // Scroll về đầu trang khi đổi trang
+      if (opts.scrollTop !== false) {
+        pdfBody.scrollTop = 0;
+      }
+
+      hideLoading();
+    } catch (err) {
+      if (err && (err.name === 'RenderingCancelledException' || /cancel/i.test(err.message || ''))) {
+        hideLoading();
+      } else {
+        console.error('Render error:', err);
+        showError(err && err.message ? 'Lỗi: ' + err.message : 'Không thể tải PDF.');
+      }
+    } finally {
+      isRendering = false;
+
+      if (pendingRender !== null) {
+        const p = pendingRender;
+        pendingRender = null;
+        renderPage(p, { silent: false });
+      }
+    }
+  }
+
+  function updatePageIndicator(page, total) {
+    pageIndicator.textContent = 'Trang ' + page + ' / ' + total;
+    pageIndicator.classList.add('show');
+    clearTimeout(updatePageIndicator._timer);
+    updatePageIndicator._timer = setTimeout(function () {
+      pageIndicator.classList.remove('show');
+    }, 1800);
+  }
+
+  function updateNavButtonsForPage(page, total) {
+    prevBtn.disabled = page <= 1;
+    nextBtn.disabled = page >= total;
+  }
+
+  /* ============ NAVIGATE ============ */
   function updateActiveUI() {
     tocScroll.querySelectorAll('.section-item').forEach(function (el) {
       el.classList.toggle('active', el.dataset.id === activeId);
     });
-    updateNavButtons();
     updatePdfCheckBtn();
-  }
-
-  function updateNavButtons() {
-    if (!activeId) {
-      prevBtn.disabled = true;
-      nextBtn.disabled = true;
-      return;
-    }
-    const idx = FLAT.findIndex(function (s) { return s.id === activeId; });
-    prevBtn.disabled = idx <= 0;
-    nextBtn.disabled = idx === -1 || idx >= FLAT.length - 1;
   }
 
   function updateTopbar(sec) {
     if (!sec) return;
     currentKicker.textContent = 'Chương ' + (sec.chapterIdx + 1) + ' · Trang ' + sec.page;
     currentTitle.textContent = sec.title;
-    openExtBtn.href = pageUrl(sec.page);
-    fallbackOpen.onclick = function () {
-      window.open(pageUrl(sec.page), '_blank', 'noopener');
-    };
+    openExtBtn.href = PDF_URL + '#page=' + sec.page;
   }
 
-  /* ============ IFRAME NAVIGATION ============ */
-  function showLoading(page) {
-    pdfLoading.querySelector('span').textContent = 'Đang mở trang ' + page + '...';
-    pdfLoading.classList.add('active');
-    clearTimeout(loadingTimer);
-    loadingTimer = setTimeout(function () {
-      pdfLoading.classList.remove('active');
-    }, 2200);
-  }
-
-  function hideLoading() {
-    clearTimeout(loadingTimer);
-    pdfLoading.classList.remove('active');
-  }
-
-  function showFallbackHint() {
-    clearTimeout(fallbackTimer);
-    pdfFallback.classList.remove('visible');
-    fallbackTimer = setTimeout(function () {
-      pdfFallback.classList.add('visible');
-    }, 3500);
-  }
-
-  function hideFallbackHint() {
-    clearTimeout(fallbackTimer);
-    pdfFallback.classList.remove('visible');
-  }
-
-  function setIframePage(page) {
-    const url = pageUrl(page);
-
-    // Lần đầu: nạp trực tiếp (trình xem PDF xử lý #page khi khởi tạo)
-    if (!hasNavigated) {
-      hasNavigated = true;
-      pdfFrame.src = url;
-      showFallbackHint();
-      return;
-    }
-
-    // Buộc reload: về about:blank rồi gán URL mới để trình duyệt
-    // không coi là "chỉ đổi fragment" (nếu không sẽ đứng ở trang cũ).
-    showLoading(page);
-    hideFallbackHint();
-    pdfFrame.src = 'about:blank';
-
-    // Delay 60ms đủ để Safari iOS/Chrome Android nhả PDF viewer cũ
-    setTimeout(function () {
-      pdfFrame.src = url;
-      showFallbackHint();
-    }, 60);
-
-    setTimeout(hideLoading, 2200);
-  }
-
-  // Khi iframe load xong URL thật → ẩn loading và ẩn hint fallback
-  pdfFrame.addEventListener('load', function () {
-    const src = pdfFrame.src || '';
-    if (src && src.indexOf('about:blank') === -1) {
-      // Có thể là load thành công hoặc load lỗi — đều ẩn loading.
-      setTimeout(hideLoading, 100);
-      // Không ẩn hint fallback ngay, để người dùng tự thấy và bấm
-      // (vì load event cũng fire cả khi PDF lỗi trắng).
-    }
-  });
-
-  // Bấm vào vùng PDF → ẩn hint fallback (người dùng đã tương tác được)
-  pdfBody.addEventListener('touchstart', function () {
-    hideFallbackHint();
-  }, { passive: true, once: true });
-
-  /* ============ MOBILE: MỞ / ĐÓNG OVERLAY PDF ============ */
-  function openPdfView() {
-    app.classList.add('pdf-open');
-  }
-
-  function closePdfView() {
-    app.classList.remove('pdf-open');
-    hideFallbackHint();
-  }
-
-  /* ============ SCROLL ============ */
   function scrollActiveIntoView() {
     if (!activeId) return;
     const el = tocScroll.querySelector('.section-item[data-id="' + activeId + '"]');
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
-  /* ============ NAVIGATE ============ */
+  function openPdfView() {
+    if (isMobile) app.classList.add('pdf-open');
+  }
+  function closePdfView() {
+    app.classList.remove('pdf-open');
+  }
+
   function navigateTo(id, opts) {
     opts = opts || {};
     const sec = BY_ID[id];
     if (!sec) return;
 
     activeId = id;
-    setIframePage(sec.page);
-
-    const wasCollapsed = collapsed.has(sec.chapterIdx);
-    if (wasCollapsed) toggleChapter(sec.chapterIdx, 'open');
-
     updateActiveUI();
     updateTopbar(sec);
     saveLast();
 
-    // Trên mobile: mở overlay PDF
-    if (isMobile) {
-      openPdfView();
-    }
+    const wasCollapsed = collapsed.has(sec.chapterIdx);
+    if (wasCollapsed) toggleChapter(sec.chapterIdx, 'open');
+
+    // Render PDF đúng trang
+    renderPage(sec.page);
+
+    // Mở PDF view trên mobile
+    if (isMobile) openPdfView();
 
     if (opts.scroll !== false) {
       if (wasCollapsed) setTimeout(scrollActiveIntoView, 300);
@@ -1305,19 +1268,17 @@
     }
   }
 
-  function goPrev() {
-    if (!activeId) return;
-    const idx = FLAT.findIndex(function (s) { return s.id === activeId; });
-    if (idx > 0) navigateTo(FLAT[idx - 1].id, { scroll: false });
+  function goPrevPage() {
+    if (currentPageNum > 1) renderPage(currentPageNum - 1);
   }
 
-  function goNext() {
-    if (!activeId) return;
-    const idx = FLAT.findIndex(function (s) { return s.id === activeId; });
-    if (idx >= 0 && idx < FLAT.length - 1) navigateTo(FLAT[idx + 1].id, { scroll: false });
+  function goNextPage() {
+    if (pdfDoc && currentPageNum < pdfDoc.numPages) {
+      renderPage(currentPageNum + 1);
+    }
   }
 
-  /* ============ CHAPTER TOGGLE ============ */
+  /* ============ CHAPTERS ============ */
   function toggleChapter(idx, forceState) {
     const chEl = tocScroll.querySelector('.chapter[data-chapter-idx="' + idx + '"]');
     if (!chEl) return;
@@ -1384,7 +1345,6 @@
 
   /* ============ EVENTS ============ */
   tocScroll.addEventListener('click', function (e) {
-    // Ô đánh dấu hoàn thành → toggle, KHÔNG điều hướng
     const completeBtn = e.target.closest('.complete-btn');
     if (completeBtn) {
       e.preventDefault();
@@ -1394,7 +1354,6 @@
       return;
     }
 
-    // Header chương → mở/đóng
     const head = e.target.closest('.chapter-head');
     if (head) {
       if (filteredQuery) return;
@@ -1403,57 +1362,36 @@
       return;
     }
 
-    // Link mục → điều hướng PDF
     const link = e.target.closest('.section-link');
     if (link) {
-      // Ctrl/Cmd click để mở tab mới (desktop)
-      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       const item = link.closest('.section-item');
       if (item) navigateTo(item.dataset.id);
     }
   });
 
-  searchInput.addEventListener('input', function () {
-    filterTOC(this.value);
-  });
-
-  // iOS: bấm Enter/Go trên bàn phím → ẩn bàn phím
+  searchInput.addEventListener('input', function () { filterTOC(this.value); });
   searchInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      this.blur();
-    }
+    if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
   });
 
-  prevBtn.addEventListener('click', goPrev);
-  nextBtn.addEventListener('click', goNext);
-
+  prevBtn.addEventListener('click', goPrevPage);
+  nextBtn.addEventListener('click', goNextPage);
   backBtn.addEventListener('click', closePdfView);
 
   pdfCheckBtn.addEventListener('click', function () {
     if (activeId) toggleComplete(activeId);
   });
 
-  fallbackOpen.addEventListener('click', function () {
-    if (activeId) {
-      const sec = BY_ID[activeId];
-      window.open(pageUrl(sec.page), '_blank', 'noopener');
-    }
+  pdfErrorBtn.addEventListener('click', function () {
+    const page = (activeId && BY_ID[activeId].page) || 1;
+    window.open(PDF_URL + '#page=' + page, '_blank', 'noopener');
   });
 
   function applyThemeColor() {
     if (!themeColorMeta) return;
     const isDark = document.documentElement.dataset.theme === 'dark';
     themeColorMeta.setAttribute('content', isDark ? '#131826' : '#ffffff');
-    document.querySelectorAll('.icon-sun, .icon-moon').forEach(function (svg) {
-      // icon-sun hiện ở dark, icon-moon hiện ở light
-      if (svg.classList.contains('icon-sun')) {
-        svg.style.display = isDark ? 'block' : 'none';
-      } else if (svg.classList.contains('icon-moon')) {
-        svg.style.display = isDark ? 'none' : 'block';
-      }
-    });
   }
 
   themeToggle.addEventListener('click', function () {
@@ -1467,46 +1405,12 @@
     if (filteredQuery) return;
     TOC.forEach(function (_, idx) { toggleChapter(idx, 'open'); });
   });
-
   collapseAllBtn.addEventListener('click', function () {
     if (filteredQuery) return;
     TOC.forEach(function (_, idx) { toggleChapter(idx, 'close'); });
   });
 
-  /* ============ SWIPE EDGE TO CLOSE PDF (mobile) ============ */
-  (function initEdgeSwipe() {
-    let startX = 0, startY = 0, tracking = false, moved = false;
-
-    edgeSwipe.addEventListener('touchstart', function (e) {
-      if (e.touches.length !== 1) return;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      tracking = true;
-      moved = false;
-    }, { passive: true });
-
-    edgeSwipe.addEventListener('touchmove', function (e) {
-      if (!tracking) return;
-      const dx = e.touches[0].clientX - startX;
-      const dy = Math.abs(e.touches[0].clientY - startY);
-      if (dx > 20 && Math.abs(dx) > dy) {
-        moved = true;
-        // Có thể thêm hiệu ứng kéo nếu muốn
-      }
-    }, { passive: true });
-
-    edgeSwipe.addEventListener('touchend', function (e) {
-      if (!tracking) return;
-      tracking = false;
-      const dx = e.changedTouches[0].clientX - startX;
-      const dy = Math.abs(e.changedTouches[0].clientY - startY);
-      if (moved && dx > 80 && dy < 60) {
-        closePdfView();
-      }
-    }, { passive: true });
-  })();
-
-  /* ============ KEYBOARD SHORTCUTS ============ */
+  /* ============ KEYBOARD ============ */
   document.addEventListener('keydown', function (e) {
     const isInput = e.target.matches('input, textarea, [contenteditable]');
 
@@ -1516,7 +1420,6 @@
       searchInput.select();
       return;
     }
-
     if (e.key === 'Escape') {
       if (document.activeElement === searchInput) {
         searchInput.value = '';
@@ -1524,37 +1427,32 @@
         searchInput.blur();
         return;
       }
-      if (app.classList.contains('pdf-open')) {
-        closePdfView();
-      }
+      if (app.classList.contains('pdf-open')) closePdfView();
       return;
     }
-
     if (!isInput) {
-      if (e.key === '[') { e.preventDefault(); goPrev(); }
-      if (e.key === ']') { e.preventDefault(); goNext(); }
+      if (e.key === '[') { e.preventDefault(); goPrevPage(); }
+      if (e.key === ']') { e.preventDefault(); goNextPage(); }
     }
   });
 
-  /* ============ DETECT MOBILE / RESIZE ============ */
-  function checkMobile() {
+  /* ============ RESIZE ============ */
+  let resizeTimer;
+  window.addEventListener('resize', function () {
+    const wasMobile = isMobile;
     isMobile = window.matchMedia('(max-width: 860px)').matches;
-    if (!isMobile) {
-      // Chuyển sang desktop → đóng overlay nếu đang mở
+    if (!isMobile && wasMobile) {
       app.classList.remove('pdf-open');
     }
-  }
-  window.addEventListener('resize', checkMobile);
-  window.addEventListener('orientationchange', function () {
-    setTimeout(checkMobile, 200);
-  });
 
-  /* ============ FILE:// WARNING ============ */
-  function checkFileProtocol() {
-    if (location.protocol === 'file:' && isMobile) {
-      fileWarning.classList.add('show');
+    // Re-render PDF để fit width mới
+    if (pdfDoc && currentPageNum) {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        renderPage(currentPageNum, { silent: true, scrollTop: false });
+      }, 250);
     }
-  }
+  });
 
   /* ============ INIT ============ */
   function init() {
@@ -1562,33 +1460,33 @@
     loadState();
     updateActiveUI();
     applyThemeColor();
-    checkFileProtocol();
+
+    // Nếu pdf.js chưa load được từ CDN → hiện nút mở ngoài ngay
+    if (typeof pdfjsLib === 'undefined') {
+      showError('Không tải được thư viện PDF. Hãy kiểm tra kết nối mạng, hoặc dùng nút mở bằng ứng dụng khác.');
+    }
 
     let lastId = null;
     try { lastId = localStorage.getItem(KEY_LAST); } catch (e) {}
 
     if (lastId && BY_ID[lastId]) {
-      // Nếu là mobile: chỉ đánh dấu active, KHÔNG tự mở PDF
+      const sec = BY_ID[lastId];
+      activeId = lastId;
+      updateActiveUI();
+      updateTopbar(sec);
+
       if (isMobile) {
-        activeId = lastId;
-        updateActiveUI();
-        updateTopbar(BY_ID[lastId]);
-        // Chưa setIframePage — đợi người dùng bấm
-        // Nhưng vẫn cần preload URL cho openExtBtn
-        openExtBtn.href = pageUrl(BY_ID[lastId].page);
+        // Mobile: chỉ đánh dấu active, không tự mở PDF
       } else {
-        navigateTo(lastId);
+        // Desktop: render luôn
+        renderPage(sec.page);
       }
     } else if (FLAT.length > 0) {
       const first = FLAT[0];
       activeId = first.id;
       updateActiveUI();
       updateTopbar(first);
-      if (!isMobile) {
-        setIframePage(first.page);
-      } else {
-        openExtBtn.href = pageUrl(first.page);
-      }
+      // Không tự render — đợi người dùng chọn
     }
   }
 
