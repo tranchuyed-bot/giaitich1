@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mục lục thông minh · Giải tích hàm một biến số</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('giaotich1.viewer.theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  })();
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --primary: #d32f2f;
+    --primary-2: #ff7043;
+    --primary-soft: rgba(211, 47, 47, 0.1);
+    --primary-glow: rgba(211, 47, 47, 0.35);
+
+    --green: #10b981;
+    --green-2: #34d399;
+    --green-soft: rgba(16, 185, 129, 0.12);
+
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --surface-2: #f7f9fc;
+    --surface-3: #eef2f8;
+
+    --text: #1a2333;
+    --text-soft: #475569;
+    --muted: #94a3b8;
+    --border: #e2e8f0;
+    --border-2: #cbd5e1;
+
+    --mark: rgba(255, 213, 0, 0.45);
+
+    --sidebar-w: 340px;
+    --topbar-h: 62px;
+
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 16px 40px -12px rgba(15, 23, 42, 0.18);
+
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  [data-theme="dark"] {
+    --primary: #ff5c5c;
+    --primary-2: #ff9a6b;
+    --primary-soft: rgba(255, 92, 92, 0.14);
+    --primary-glow: rgba(255, 92, 92, 0.4);
+
+    --green: #34d399;
+    --green-2: #6ee7b7;
+    --green-soft: rgba(52, 211, 153, 0.15);
+
+    --bg: #0a0e17;
+    --surface: #131826;
+    --surface-2: #1a2133;
+    --surface-3: #202a40;
+
+    --text: #e8eefb;
+    --text-soft: #b8c4db;
+    --muted: #8595b0;
+    --border: #232c42;
+    --border-2: #33405c;
+
+    --mark: rgba(255, 213, 0, 0.35);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+  }
+
+  html, body { margin: 0; height: 100%; }
+
+  body {
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--bg);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button { font-family: inherit; }
+
+  .app { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    z-index: 30;
+  }
+
+  .sidebar-head {
+    flex-shrink: 0;
+    padding: 18px 18px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+
+  .brand-logo {
+    flex: 0 0 42px;
+    width: 42px; height: 42px;
+    display: grid; place-items: center;
+    border-radius: 12px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    box-shadow: 0 8px 20px -8px var(--primary-glow);
+  }
+
+  .brand-text { min-width: 0; }
+  .brand-title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+  .brand-sub { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .search-wrap { position: relative; margin-bottom: 12px; }
+
+  .search-icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    width: 16px; height: 16px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 2;
+    pointer-events: none;
+  }
+
+  #search {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px 0 36px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
+  }
+  #search::placeholder { color: var(--muted); }
+  #search:focus {
+    border-color: var(--primary);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+
+  .progress-box { margin-bottom: 12px; }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .progress-label { color: var(--text-soft); font-weight: 600; }
+  .progress-count { color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .progress-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--green), var(--green-2));
+    transition: width .5s var(--ease);
+    box-shadow: 0 0 8px var(--green-soft);
+  }
+
+  .hint {
+    margin: 8px 0 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--text-soft);
+    font-size: 11px;
+    line-height: 1.4;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .hint-icon {
+    flex: 0 0 14px;
+    width: 14px; height: 14px;
+    margin-top: 1px;
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .actions { display: flex; gap: 8px; }
+
+  .action-btn {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--text-soft);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .18s var(--ease);
+  }
+  .action-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+  }
+
+  /* ===== TOC ===== */
+  .toc {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 10px 20px;
+    overscroll-behavior: contain;
+  }
+  .toc::-webkit-scrollbar { width: 8px; }
+  .toc::-webkit-scrollbar-track { background: transparent; }
+  .toc::-webkit-scrollbar-thumb {
+    background: var(--border-2);
+    border-radius: 4px;
+    border: 2px solid var(--surface);
+  }
+
+  .toc.searching.empty::after {
+    content: 'Không tìm thấy mục nào khớp với tìm kiếm.';
+    display: block;
+    padding: 28px 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .chapter { margin-bottom: 4px; }
+
+  .chapter-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text);
+    font-size: 12.5px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: background .18s var(--ease);
+  }
+  .chapter-head:hover { background: var(--surface-2); }
+
+  .chevron {
+    flex: 0 0 14px;
+    width: 14px; height: 14px;
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform .25s var(--ease), stroke .2s var(--ease);
+  }
+  .chapter.collapsed .chevron { transform: rotate(-90deg); }
+
+  .chapter-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chapter-count {
+    flex: 0 0 auto;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    color: var(--muted);
+    font-size: 10.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    transition: all .2s var(--ease);
+  }
+  .chapter-count.complete {
+    background: var(--green-soft);
+    color: var(--green);
+  }
+
+  .chapter-body {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows .3s var(--ease);
+  }
+  .chapter.collapsed .chapter-body { grid-template-rows: 0fr; }
+  .chapter-body-inner { overflow: hidden; min-height: 0; }
+
+  .section-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 4px 14px;
+  }
+
+  /* ---- SECTION ROW: 2 vùng bấm tách biệt ---- */
+  .section-item {
+    display: flex;
+    align-items: stretch;
+    margin: 1px 0;
+    border-radius: 8px;
+    transition: background .15s var(--ease);
+  }
+  .section-item:hover { background: var(--surface-2); }
+  .section-item.active { background: var(--primary-soft); }
+
+  /* Vùng 1: điều hướng PDF */
+  .section-link {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 6px 9px 10px;
+    color: var(--text-soft);
+    text-decoration: none;
+    font-size: 12.5px;
+    line-height: 1.35;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    transition: color .15s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .section-link:hover { color: var(--text); }
+  .section-item.active .section-link { color: var(--primary); font-weight: 600; }
+
+  .section-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .section-page {
+    flex: 0 0 auto;
+    font-size: 10.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--surface-3);
+    transition: all .15s var(--ease);
+  }
+  .section-item.active .section-page {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  /* Vùng 2: ô đánh dấu hoàn thành */
+  .complete-btn {
+    flex: 0 0 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 3px 2px 3px 0;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    transition: background .15s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .complete-btn:hover { background: var(--surface-3); }
+  .complete-btn:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: -2px;
+  }
+
+  .check-box {
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    border-radius: 7px;
+    border: 2px solid var(--border-2);
+    background: transparent;
+    transition: background .22s var(--ease), border-color .22s var(--ease), transform .22s var(--ease);
+  }
+
+  .check-box svg {
+    width: 13px; height: 13px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 3.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 26;
+    stroke-dashoffset: 26;
+    transition: stroke-dashoffset .28s ease .04s;
+  }
+
+  .complete-btn:hover .check-box {
+    border-color: var(--green);
+    background: var(--green-soft);
+  }
+
+  .section-item.completed .check-box {
+    background: linear-gradient(135deg, var(--green), var(--green-2));
+    border-color: transparent;
+    transform: scale(1.03);
+    box-shadow: 0 4px 10px -4px var(--green);
+  }
+  .section-item.completed .check-box svg { stroke-dashoffset: 0; }
+  .section-item.completed .complete-btn:hover .check-box { transform: scale(1.08); }
+
+  .section-item.completed .section-link { color: var(--muted); }
+  .section-item.completed .section-title {
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: var(--muted);
+  }
+  .section-item.completed .section-page {
+    opacity: .7;
+    background: var(--surface-3);
+    color: var(--muted);
+  }
+  .section-item.completed.active .section-page {
+    background: var(--primary);
+    color: #fff;
+    opacity: 1;
+  }
+
+  mark {
+    background: var(--mark);
+    color: inherit;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+
+  /* ===== CONTENT ===== */
+  .content { flex: 1; display: flex; flex-direction: column; min-width: 0; height: 100%; }
+
+  .topbar {
+    flex-shrink: 0;
+    height: var(--topbar-h);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 10;
+  }
+
+  .icon-btn {
+    flex: 0 0 auto;
+    width: 38px; height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-soft);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .18s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .icon-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .icon-btn svg {
+    width: 18px; height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .current {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 0 6px;
+  }
+  .current-kicker {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .current-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pdf-wrap {
+    flex: 1;
+    position: relative;
+    background: #525659;
+    min-height: 0;
+  }
+  [data-theme="dark"] .pdf-wrap { background: #1a1a1a; }
+
+  #pdfFrame { width: 100%; height: 100%; border: 0; display: block; }
+
+  /* Overlay loading khi chuyển trang */
+  .pdf-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--surface-2);
+    color: var(--text-soft);
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .18s var(--ease), visibility .18s var(--ease);
+    pointer-events: none;
+    z-index: 5;
+  }
+  .pdf-loading.active { opacity: 1; visibility: visible; }
+
+  .pdf-loading .spinner {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2.5px solid var(--border-2);
+    border-top-color: var(--primary);
+    animation: spin .7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #menuToggle { display: none; }
+
+  .icon-sun { display: none; }
+  [data-theme="dark"] .icon-sun { display: block; }
+  [data-theme="dark"] .icon-moon { display: none; }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s var(--ease), visibility .25s var(--ease);
+    z-index: 25;
+  }
+
+  @media (max-width: 860px) {
+    :root { --sidebar-w: min(340px, 88vw); }
+
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      height: 100dvh;
+      width: var(--sidebar-w);
+      transform: translateX(-100%);
+      transition: transform .3s var(--ease);
+      box-shadow: var(--shadow-lg);
+      z-index: 40;
+    }
+    .app.sidebar-open .sidebar { transform: translateX(0); }
+    .app.sidebar-open .sidebar-backdrop { opacity: 1; visibility: visible; }
+    #menuToggle { display: inline-flex; }
+  }
+
+  @media (max-width: 480px) {
+    .topbar { padding: 0 8px; gap: 6px; }
+    .icon-btn { width: 34px; height: 34px; border-radius: 9px; }
+    .icon-btn svg { width: 16px; height: 16px; }
+    .current-title { font-size: 12.5px; }
+    #newTabBtn { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<noscript>
+  <div style="position:fixed;inset:0;display:grid;place-items:center;background:#f4f6fa;z-index:9999;font-family:sans-serif;text-align:center;padding:20px;">
+    <div>
+      <h2 style="color:#d32f2f;margin:0 0 10px;">Cần bật JavaScript</h2>
+      <p style="color:#666;margin:0;">Giao diện mục lục thông minh yêu cầu JavaScript để hoạt động.</p>
+    </div>
+  </div>
+</noscript>
+
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar" aria-label="Mục lục">
+    <div class="sidebar-head">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">∫</div>
+        <div class="brand-text">
+          <div class="brand-title">Giải tích 1</div>
+          <div class="brand-sub">Giải tích hàm một biến số</div>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="search" id="search" placeholder="Tìm mục... (nhấn /)" autocomplete="off">
+      </div>
+
+      <div class="progress-box">
+        <div class="progress-row">
+          <span class="progress-label">Đã học xong</span>
+          <span class="progress-count" id="doneText">0/0</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="doneBar"></div></div>
+      </div>
+
+      <div class="hint">
+        <svg class="hint-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+        <span>Bấm <strong>tiêu đề</strong> để mở đúng trang PDF · Bấm <strong>ô vuông</strong> bên phải để đánh dấu đã học.</span>
+      </div>
+
+      <div class="actions">
+        <button class="action-btn" id="expandAll" type="button">Mở tất cả</button>
+        <button class="action-btn" id="collapseAll" type="button">Thu gọn</button>
+      </div>
+    </div>
+
+    <nav class="toc" id="toc" aria-label="Danh sách bài học"></nav>
+  </aside>
+
+  <div class="sidebar-backdrop" id="backdrop"></div>
+
+  <main class="content">
+    <header class="topbar">
+      <button class="icon-btn" id="menuToggle" type="button" aria-label="Mở mục lục">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+
+      <button class="icon-btn" id="prevBtn" type="button" aria-label="Mục trước" title="Mục trước ([)">
+        <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+
+      <div class="current">
+        <span class="current-kicker" id="currentKicker">Bắt đầu</span>
+        <span class="current-title" id="currentTitle">Chọn một mục để bắt đầu</span>
+      </div>
+
+      <button class="icon-btn" id="nextBtn" type="button" aria-label="Mục tiếp" title="Mục tiếp (])">
+        <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+
+      <a class="icon-btn" id="newTabBtn" href="#" target="_blank" rel="noopener"
+         title="Mở PDF trong tab mới" aria-label="Mở PDF trong tab mới">
+        <svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>
+      </a>
+
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="Đổi giao diện" title="Đổi giao diện sáng / tối">
+        <svg class="icon-moon" viewBox="0 0 24 24"><path d="M20.5 14.6A8.5 8.5 0 1 1 9.4 3.5a7 7 0 0 0 11.1 11.1z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+      </button>
+    </header>
+
+    <div class="pdf-wrap">
+      <iframe name="khung_pdf" id="pdfFrame" title="Nội dung PDF"></iframe>
+      <div class="pdf-loading" id="pdfLoading">
+        <div class="spinner"></div>
+        <span>Đang mở trang...</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ============ DỮ LIỆU ============ */
+  const PDF_FILE = 'Giải tích hàm một biến số (Giải tích 1) - 2013_2.pdf';
+
+  const TOC = [
+    {
+      title: 'Chương 1. Số phức và giới hạn',
+      sections: [
+        { title: '1.1. Số thực', page: 8 },
+        { title: '1.2. Số phức', page: 11 },
+        { title: '1.3. Dãy số thực', page: 22 }
+      ]
+    },
+    {
+      title: 'Chương 2. Phép tính vi phân',
+      sections: [
+        { title: '2.1. Các khái niệm cơ bản', page: 44 },
+        { title: '2.2. Giới hạn của hàm số', page: 49 },
+        { title: '2.3. ĐL Vô cùng bé & Vô cùng lớn', page: 56 },
+        { title: '2.4. Hàm số liên tục', page: 57 },
+        { title: '2.5. Hàm liên tục đều', page: 62 },
+        { title: '2.6. Đạo hàm', page: 65 },
+        { title: '2.7. Vi phân của hàm số', page: 68 },
+        { title: '2.8. Đạo hàm và vi phân cấp cao', page: 68 },
+        { title: '2.9. Công thức Taylor', page: 76 },
+        { title: "2.10. Quy tắc L'Hospital", page: 80 },
+        { title: '2.11. Hàm lồi', page: 82 }
+      ]
+    },
+    {
+      title: 'Chương 3. Phép tính tích phân',
+      sections: [
+        { title: '3.1. Tích phân xác định', page: 96 },
+        { title: '3.2. Tính chất', page: 102 },
+        { title: '3.3. Nguyên hàm và TP xác định', page: 104 },
+        { title: '3.4. Các phương pháp tính', page: 107 },
+        { title: '3.5. Tích phân hàm phân thức hữu tỷ', page: 111 },
+        { title: '3.6. Tích phân hàm lượng giác', page: 114 },
+        { title: '3.7. Một vài ứng dụng', page: 117 },
+        { title: '3.8. Tích phân suy rộng cận vô hạn', page: 127 },
+        { title: '3.9. Tích phân suy rộng cận hữu hạn', page: 133 }
+      ]
+    },
+    {
+      title: 'Chương 4. Chuỗi số và chuỗi hàm',
+      sections: [
+        { title: '4.1. Chuỗi số', page: 146 },
+        { title: '4.2. Chuỗi số dương', page: 149 },
+        { title: '4.3. Chuỗi đan dấu', page: 154 },
+        { title: '4.4. Chuỗi hàm', page: 156 },
+        { title: '4.5. Chuỗi lũy thừa', page: 164 },
+        { title: '4.6. Chuỗi Fourier', page: 171 }
+      ]
+    }
+  ];
+
+  /* ============ FLATTEN ============ */
+  const FLAT = [];
+  const BY_ID = {};
+  TOC.forEach(function (ch, ci) {
+    ch.sections.forEach(function (s, si) {
+      const id = 's-' + ci + '-' + si;
+      const item = { id: id, title: s.title, page: s.page, chapterIdx: ci, sectionIdx: si };
+      FLAT.push(item);
+      BY_ID[id] = item;
+    });
+  });
+
+  /* ============ STORAGE KEYS ============ */
+  const KEY_THEME     = 'giaotich1.viewer.theme';
+  const KEY_DONE      = 'giaotich1.viewer.done';
+  const KEY_LAST      = 'giaotich1.viewer.last';
+  const KEY_COLLAPSED = 'giaotich1.viewer.collapsed';
+
+  /* ============ STATE ============ */
+  let activeId = null;
+  let completed = new Set();
+  let collapsed = new Set();
+  let filteredQuery = '';
+  let hasNavigated = false;   // Đánh dấu đã set iframe.src lần đầu chưa
+  let loadingTimer = null;
+
+  /* ============ ELEMENTS ============ */
+  const app           = document.getElementById('app');
+  const tocEl         = document.getElementById('toc');
+  const searchEl      = document.getElementById('search');
+  const iframe        = document.getElementById('pdfFrame');
+  const pdfLoading    = document.getElementById('pdfLoading');
+  const doneBar       = document.getElementById('doneBar');
+  const doneText      = document.getElementById('doneText');
+  const currentKicker = document.getElementById('currentKicker');
+  const currentTitle  = document.getElementById('currentTitle');
+  const prevBtn       = document.getElementById('prevBtn');
+  const nextBtn       = document.getElementById('nextBtn');
+  const newTabBtn     = document.getElementById('newTabBtn');
+  const themeToggle   = document.getElementById('themeToggle');
+  const menuToggle    = document.getElementById('menuToggle');
+  const backdrop      = document.getElementById('backdrop');
+  const expandAllBtn  = document.getElementById('expandAll');
+  const collapseAllBtn= document.getElementById('collapseAll');
+
+  /* ============ HELPERS ============ */
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function pageUrl(page) {
+    // encodeURI để xử lý khoảng trắng, ký tự tiếng Việt, dấu ngoặc
+    return encodeURI(PDF_FILE) + '#page=' + page;
+  }
+
+  function highlightMatch(text, query) {
+    if (!query) return escapeHtml(text);
+    const lower = text.toLowerCase();
+    const qLower = query.toLowerCase();
+    let result = '';
+    let i = 0;
+    while (true) {
+      const idx = lower.indexOf(qLower, i);
+      if (idx === -1) {
+        result += escapeHtml(text.slice(i));
+        break;
+      }
+      result += escapeHtml(text.slice(i, idx));
+      result += '<mark>' + escapeHtml(text.slice(idx, idx + query.length)) + '</mark>';
+      i = idx + query.length;
+    }
+    return result;
+  }
+
+  /* ============ BUILD TOC ============ */
+  function buildTOC() {
+    tocEl.innerHTML = TOC.map(function (ch, ci) {
+      const sectionsHtml = ch.sections.map(function (s, si) {
+        const id = 's-' + ci + '-' + si;
+        return '<li class="section-item" data-id="' + id + '">' +
+          '<a class="section-link" href="' + pageUrl(s.page) + '" target="khung_pdf" data-page="' + s.page + '">' +
+            '<span class="section-title">' + escapeHtml(s.title) + '</span>' +
+            '<span class="section-page">tr. ' + s.page + '</span>' +
+          '</a>' +
+          '<button class="complete-btn" type="button" aria-pressed="false" ' +
+                  'aria-label="Đánh dấu hoàn thành: ' + escapeHtml(s.title) + '" ' +
+                  'title="Đánh dấu đã học">' +
+            '<span class="check-box" aria-hidden="true">' +
+              '<svg viewBox="0 0 24 24"><path d="M4 12.6l5.2 5.2L20 6.6"/></svg>' +
+            '</span>' +
+          '</button>' +
+        '</li>';
+      }).join('');
+
+      return '<div class="chapter" data-chapter-idx="' + ci + '">' +
+        '<button class="chapter-head" type="button" aria-expanded="true">' +
+          '<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
+          '<span class="chapter-title">' + escapeHtml(ch.title) + '</span>' +
+          '<span class="chapter-count">0/' + ch.sections.length + '</span>' +
+        '</button>' +
+        '<div class="chapter-body"><div class="chapter-body-inner">' +
+          '<ul class="section-list">' + sectionsHtml + '</ul>' +
+        '</div></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* ============ LOAD STATE ============ */
+  function loadState() {
+    try {
+      const arr = JSON.parse(localStorage.getItem(KEY_DONE) || '[]');
+      completed = new Set(arr.filter(function (id) { return BY_ID[id]; }));
+    } catch (e) { completed = new Set(); }
+
+    try {
+      const arr = JSON.parse(localStorage.getItem(KEY_COLLAPSED) || '[]');
+      collapsed = new Set(arr.filter(function (i) { return Number.isInteger(i); }));
+    } catch (e) { collapsed = new Set(); }
+
+    tocEl.querySelectorAll('.chapter').forEach(function (chEl) {
+      const idx = Number(chEl.dataset.chapterIdx);
+      if (collapsed.has(idx)) {
+        chEl.classList.add('collapsed');
+        chEl.querySelector('.chapter-head').setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    applyCompletedState();
+  }
+
+  function saveDone() {
+    try { localStorage.setItem(KEY_DONE, JSON.stringify(Array.from(completed))); } catch (e) {}
+  }
+  function saveCollapsed() {
+    try { localStorage.setItem(KEY_COLLAPSED, JSON.stringify(Array.from(collapsed))); } catch (e) {}
+  }
+  function saveLast() {
+    try { if (activeId) localStorage.setItem(KEY_LAST, activeId); } catch (e) {}
+  }
+
+  /* ============ COMPLETED STATE ============ */
+  function applyCompletedState() {
+    tocEl.querySelectorAll('.section-item').forEach(function (item) {
+      const isDone = completed.has(item.dataset.id);
+      item.classList.toggle('completed', isDone);
+      const btn = item.querySelector('.complete-btn');
+      btn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
+      btn.title = isDone ? 'Bỏ đánh dấu hoàn thành' : 'Đánh dấu đã học';
+    });
+    updateProgressUI();
+  }
+
+  function updateProgressUI() {
+    tocEl.querySelectorAll('.chapter').forEach(function (chEl) {
+      const idx = Number(chEl.dataset.chapterIdx);
+      const ch = TOC[idx];
+      let count = 0;
+      ch.sections.forEach(function (_, si) {
+        if (completed.has('s-' + idx + '-' + si)) count++;
+      });
+      const badge = chEl.querySelector('.chapter-count');
+      badge.textContent = count + '/' + ch.sections.length;
+      badge.classList.toggle('complete', count === ch.sections.length);
+    });
+
+    const total = FLAT.length;
+    const count = completed.size;
+    const pct = total ? (count / total * 100) : 0;
+    doneBar.style.width = pct + '%';
+    doneText.textContent = count + '/' + total;
+  }
+
+  function toggleComplete(id) {
+    const item = tocEl.querySelector('.section-item[data-id="' + id + '"]');
+    if (!item) return;
+
+    if (completed.has(id)) {
+      completed.delete(id);
+      item.classList.remove('completed');
+    } else {
+      completed.add(id);
+      item.classList.add('completed');
+      const box = item.querySelector('.check-box');
+      box.style.transform = 'scale(1.15)';
+      setTimeout(function () { box.style.transform = ''; }, 180);
+    }
+
+    const btn = item.querySelector('.complete-btn');
+    const isDone = completed.has(id);
+    btn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
+    btn.title = isDone ? 'Bỏ đánh dấu hoàn thành' : 'Đánh dấu đã học';
+
+    saveDone();
+    updateProgressUI();
+  }
+
+  /* ============ ACTIVE / NAV ============ */
+  function updateActiveUI() {
+    tocEl.querySelectorAll('.section-item').forEach(function (el) {
+      el.classList.toggle('active', el.dataset.id === activeId);
+    });
+    updateNavButtons();
+  }
+
+  function updateNavButtons() {
+    if (!activeId) {
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
+    }
+    const idx = FLAT.findIndex(function (s) { return s.id === activeId; });
+    prevBtn.disabled = idx <= 0;
+    nextBtn.disabled = idx === -1 || idx >= FLAT.length - 1;
+  }
+
+  function updateTopbar(sec) {
+    if (!sec) return;
+    currentKicker.textContent = 'Chương ' + (sec.chapterIdx + 1) + ' · Trang ' + sec.page;
+    currentTitle.textContent = sec.title;
+    newTabBtn.href = pageUrl(sec.page);
+  }
+
+  /* ============ IFRAME NAVIGATION (ĐÃ SỬA) ============ */
+  function showLoading(page) {
+    pdfLoading.querySelector('span').textContent = 'Đang mở trang ' + page + '...';
+    pdfLoading.classList.add('active');
+    clearTimeout(loadingTimer);
+    loadingTimer = setTimeout(function () {
+      pdfLoading.classList.remove('active');
+    }, 1800);
+  }
+
+  function hideLoading() {
+    clearTimeout(loadingTimer);
+    pdfLoading.classList.remove('active');
+  }
+
+  function setIframePage(page) {
+    const url = pageUrl(page);
+
+    // Lần đầu: nạp trực tiếp (trình xem PDF xử lý #page= khi khởi tạo)
+    if (!hasNavigated) {
+      hasNavigated = true;
+      iframe.src = url;
+      return;
+    }
+
+    // Các lần sau: BẮT BUỘC reload toàn bộ.
+    // Nếu chỉ đổi fragment (#page=...), trình duyệt coi là same-document
+    // và KHÔNG nạp lại PDF viewer → PDF đứng yên ở trang cũ.
+    showLoading(page);
+    iframe.src = 'about:blank';
+    setTimeout(function () {
+      iframe.src = url;
+    }, 40);
+
+    // Dự phòng: nếu iframe load không kịp báo, tự ẩn loading
+    setTimeout(hideLoading, 2000);
+  }
+
+  // Ẩn loading khi PDF thật sự load xong
+  iframe.addEventListener('load', function () {
+    if (iframe.src && iframe.src.indexOf('about:blank') === -1 && hasNavigated) {
+      setTimeout(hideLoading, 120);
+    }
+  });
+
+  /* ============ SCROLL / NAVIGATE ============ */
+  function scrollActiveIntoView() {
+    if (!activeId) return;
+    const el = tocEl.querySelector('.section-item[data-id="' + activeId + '"]');
+    if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function navigateTo(id, opts) {
+    opts = opts || {};
+    const sec = BY_ID[id];
+    if (!sec) return;
+
+    activeId = id;
+    setIframePage(sec.page);
+
+    const wasCollapsed = collapsed.has(sec.chapterIdx);
+    if (wasCollapsed) toggleChapter(sec.chapterIdx, 'open');
+
+    updateActiveUI();
+    updateTopbar(sec);
+    saveLast();
+
+    if (window.matchMedia('(max-width: 860px)').matches) {
+      app.classList.remove('sidebar-open');
+    }
+
+    if (opts.scroll !== false) {
+      if (wasCollapsed) {
+        setTimeout(scrollActiveIntoView, 320);
+      } else {
+        requestAnimationFrame(scrollActiveIntoView);
+      }
+    }
+  }
+
+  function goPrev() {
+    if (!activeId) return;
+    const idx = FLAT.findIndex(function (s) { return s.id === activeId; });
+    if (idx > 0) navigateTo(FLAT[idx - 1].id);
+  }
+
+  function goNext() {
+    if (!activeId) return;
+    const idx = FLAT.findIndex(function (s) { return s.id === activeId; });
+    if (idx >= 0 && idx < FLAT.length - 1) navigateTo(FLAT[idx + 1].id);
+  }
+
+  /* ============ CHAPTERS ============ */
+  function toggleChapter(idx, forceState) {
+    const chEl = tocEl.querySelector('.chapter[data-chapter-idx="' + idx + '"]');
+    if (!chEl) return;
+
+    let isCollapsed;
+    if (forceState === 'open') isCollapsed = false;
+    else if (forceState === 'close') isCollapsed = true;
+    else isCollapsed = !collapsed.has(idx);
+
+    if (isCollapsed) {
+      collapsed.add(idx);
+      chEl.classList.add('collapsed');
+      chEl.querySelector('.chapter-head').setAttribute('aria-expanded', 'false');
+    } else {
+      collapsed.delete(idx);
+      chEl.classList.remove('collapsed');
+      chEl.querySelector('.chapter-head').setAttribute('aria-expanded', 'true');
+    }
+    saveCollapsed();
+  }
+
+  /* ============ SEARCH ============ */
+  function filterTOC(query) {
+    filteredQuery = query.trim();
+    const q = filteredQuery.toLowerCase();
+
+    if (!q) {
+      tocEl.classList.remove('searching', 'empty');
+      tocEl.querySelectorAll('.chapter').forEach(function (chEl) {
+        const idx = Number(chEl.dataset.chapterIdx);
+        chEl.style.display = '';
+        chEl.querySelectorAll('.section-item').forEach(function (secEl) {
+          secEl.style.display = '';
+          const sec = BY_ID[secEl.dataset.id];
+          secEl.querySelector('.section-title').innerHTML = escapeHtml(sec.title);
+        });
+        if (collapsed.has(idx)) {
+          chEl.classList.add('collapsed');
+          chEl.querySelector('.chapter-head').setAttribute('aria-expanded', 'false');
+        } else {
+          chEl.classList.remove('collapsed');
+          chEl.querySelector('.chapter-head').setAttribute('aria-expanded', 'true');
+        }
+      });
+      if (activeId) {
+        const el = tocEl.querySelector('.section-item[data-id="' + activeId + '"]');
+        if (el) el.scrollIntoView({ block: 'nearest' });
+      }
+      return;
+    }
+
+    tocEl.classList.add('searching');
+    let anyVisible = false;
+
+    tocEl.querySelectorAll('.chapter').forEach(function (chEl) {
+      let visibleCount = 0;
+      chEl.querySelectorAll('.section-item').forEach(function (secEl) {
+        const sec = BY_ID[secEl.dataset.id];
+        const matches = sec.title.toLowerCase().indexOf(q) !== -1;
+        secEl.style.display = matches ? '' : 'none';
+        if (matches) {
+          visibleCount++;
+          secEl.querySelector('.section-title').innerHTML = highlightMatch(sec.title, filteredQuery);
+        }
+      });
+      chEl.style.display = visibleCount > 0 ? '' : 'none';
+      chEl.classList.remove('collapsed');
+      chEl.querySelector('.chapter-head').setAttribute('aria-expanded', 'true');
+      if (visibleCount > 0) anyVisible = true;
+    });
+
+    tocEl.classList.toggle('empty', !anyVisible);
+  }
+
+  /* ============ EVENTS ============ */
+  tocEl.addEventListener('click', function (e) {
+    // 1) Ô đánh dấu hoàn thành → toggle, KHÔNG điều hướng
+    const completeBtn = e.target.closest('.complete-btn');
+    if (completeBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const item = completeBtn.closest('.section-item');
+      if (item) toggleComplete(item.dataset.id);
+      return;
+    }
+
+    // 2) Header chương → mở/đóng
+    const head = e.target.closest('.chapter-head');
+    if (head) {
+      if (filteredQuery) return;
+      const chEl = head.closest('.chapter');
+      toggleChapter(Number(chEl.dataset.chapterIdx));
+      return;
+    }
+
+    // 3) Tiêu đề mục → điều hướng PDF đúng trang
+    const link = e.target.closest('.section-link');
+    if (link) {
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      const item = link.closest('.section-item');
+      if (item) navigateTo(item.dataset.id);
+    }
+  });
+
+  searchEl.addEventListener('input', function () {
+    filterTOC(this.value);
+  });
+
+  prevBtn.addEventListener('click', goPrev);
+  nextBtn.addEventListener('click', goNext);
+
+  themeToggle.addEventListener('click', function () {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem(KEY_THEME, next); } catch (e) {}
+  });
+
+  menuToggle.addEventListener('click', function () {
+    app.classList.toggle('sidebar-open');
+  });
+
+  backdrop.addEventListener('click', function () {
+    app.classList.remove('sidebar-open');
+  });
+
+  expandAllBtn.addEventListener('click', function () {
+    if (filteredQuery) return;
+    TOC.forEach(function (_, idx) { toggleChapter(idx, 'open'); });
+  });
+
+  collapseAllBtn.addEventListener('click', function () {
+    if (filteredQuery) return;
+    TOC.forEach(function (_, idx) { toggleChapter(idx, 'close'); });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    const isInput = e.target.matches('input, textarea, [contenteditable]');
+
+    if (e.key === '/' && !isInput) {
+      e.preventDefault();
+      searchEl.focus();
+      searchEl.select();
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      if (document.activeElement === searchEl) {
+        searchEl.value = '';
+        filterTOC('');
+        searchEl.blur();
+        return;
+      }
+      if (app.classList.contains('sidebar-open')) {
+        app.classList.remove('sidebar-open');
+      }
+      return;
+    }
+
+    if (!isInput) {
+      if (e.key === '[') { e.preventDefault(); goPrev(); }
+      if (e.key === ']') { e.preventDefault(); goNext(); }
+    }
+  });
+
+  /* ============ INIT ============ */
+  function init() {
+    buildTOC();
+    loadState();
+    updateActiveUI();
+    updateNavButtons();
+
+    let lastId = null;
+    try { lastId = localStorage.getItem(KEY_LAST); } catch (e) {}
+
+    if (lastId && BY_ID[lastId]) {
+      navigateTo(lastId, { scroll: true });
+    } else if (FLAT.length > 0) {
+      const first = FLAT[0];
+      activeId = first.id;
+      setIframePage(first.page);   // Lần đầu → nạp trực tiếp, đúng #page
+      updateActiveUI();
+      updateTopbar(first);
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
