@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#ffffff" id="themeColorMeta">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Giải tích 1">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
-<title>Mục lục thông minh · Giải tích hàm một biến số</title>
+<title>Giải tích 1 · Mục lục thông minh</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,8 +18,6 @@
       var t = localStorage.getItem('giaotich1.viewer.theme');
       if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       document.documentElement.dataset.theme = t;
-      var m = document.querySelector('meta[name="theme-color"]');
-      if (m) m.setAttribute('content', t === 'dark' ? '#131826' : '#ffffff');
     } catch (e) {}
   })();
 </script>
@@ -31,7 +29,6 @@
     --primary-2: #ff7043;
     --primary-soft: rgba(211, 47, 47, 0.1);
     --primary-glow: rgba(211, 47, 47, 0.35);
-
     --green: #10b981;
     --green-2: #34d399;
     --green-soft: rgba(16, 185, 129, 0.12);
@@ -46,18 +43,17 @@
     --muted: #94a3b8;
     --border: #e2e8f0;
     --border-2: #cbd5e1;
-
     --mark: rgba(255, 213, 0, 0.45);
 
-    --sidebar-w: 340px;
-    --topbar-h: 62px;
+    --toc-w: 340px;
+    --header-h: 56px;
 
     --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-    --shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
     --shadow-lg: 0 16px 40px -12px rgba(15, 23, 42, 0.18);
 
-    --ease: cubic-bezier(0.4, 0, 0.2, 1);
-    --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+    --ease: cubic-bezier(0.32, 0.72, 0, 1);
+    --spring: cubic-bezier(0.34, 1.4, 0.5, 1);
   }
 
   [data-theme="dark"] {
@@ -65,54 +61,46 @@
     --primary-2: #ff9a6b;
     --primary-soft: rgba(255, 92, 92, 0.14);
     --primary-glow: rgba(255, 92, 92, 0.4);
-
     --green: #34d399;
     --green-2: #6ee7b7;
     --green-soft: rgba(52, 211, 153, 0.15);
-
     --bg: #0a0e17;
     --surface: #131826;
     --surface-2: #1a2133;
     --surface-3: #202a40;
-
     --text: #e8eefb;
     --text-soft: #b8c4db;
     --muted: #8595b0;
     --border: #232c42;
     --border-2: #33405c;
-
     --mark: rgba(255, 213, 0, 0.35);
-
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
   }
 
-  html {
-    height: 100%;
-    height: -webkit-fill-available;
-  }
+  html { height: 100%; height: -webkit-fill-available; }
 
   body {
     margin: 0;
     height: 100%;
     min-height: -webkit-fill-available;
-    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 14px;
     line-height: 1.5;
     color: var(--text);
     background: var(--bg);
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
     overscroll-behavior: none;
   }
 
   button { font-family: inherit; touch-action: manipulation; }
-  input { font-family: inherit; }
+  input, button, a { -webkit-tap-highlight-color: transparent; }
+  a { color: inherit; text-decoration: none; }
 
+  /* ============ APP LAYOUT ============ */
   .app {
     display: flex;
     height: 100vh;
@@ -120,188 +108,170 @@
     overflow: hidden;
   }
 
-  /* ===== SIDEBAR ===== */
-  .sidebar {
-    width: var(--sidebar-w);
-    flex-shrink: 0;
-    height: 100%;
+  .screen {
     display: flex;
     flex-direction: column;
+    height: 100%;
+    min-width: 0;
+  }
+
+  .screen-toc {
+    flex: 0 0 var(--toc-w);
+    width: var(--toc-w);
     background: var(--surface);
     border-right: 1px solid var(--border);
-    z-index: 30;
-    /* Safe area — tai thỏ / Dynamic Island */
+    z-index: 20;
     padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
     padding-left: env(safe-area-inset-left, 0px);
   }
 
-  .sidebar-head {
-    flex-shrink: 0;
-    padding: 14px 18px 12px;
-    border-bottom: 1px solid var(--border);
-    position: relative;
+  .screen-pdf {
+    flex: 1;
+    background: var(--surface);
+    z-index: 30;
   }
 
-  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  /* ============ TOC HEADER ============ */
+  .toc-head {
+    flex-shrink: 0;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
 
   .brand-logo {
-    flex: 0 0 42px;
-    width: 42px; height: 42px;
+    flex: 0 0 40px;
+    width: 40px; height: 40px;
     display: grid; place-items: center;
-    border-radius: 12px;
-    font-size: 22px;
+    border-radius: 11px;
+    font-size: 21px;
     font-weight: 700;
     color: #fff;
     background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    box-shadow: 0 8px 20px -8px var(--primary-glow);
+    box-shadow: 0 6px 16px -6px var(--primary-glow);
   }
 
-  .brand-text { min-width: 0; flex: 1; }
-  .brand-title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+  .brand-text { flex: 1; min-width: 0; }
+  .brand-title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; }
   .brand-sub { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* Nút đóng sidebar — chỉ hiện trên mobile */
-  .close-sidebar {
-    display: none;
-    flex: 0 0 36px;
-    width: 36px; height: 36px;
+  .icon-btn {
+    flex: 0 0 auto;
+    width: 38px; height: 38px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--border);
     border-radius: 10px;
-    background: var(--surface-2);
+    background: var(--surface);
     color: var(--text-soft);
     cursor: pointer;
-    touch-action: manipulation;
+    transition: all .15s var(--ease);
   }
-  .close-sidebar:active { background: var(--surface-3); }
-  .close-sidebar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+  .icon-btn:active { background: var(--surface-3); transform: scale(0.94); }
+  .icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .icon-btn:disabled { opacity: 0.35; }
 
+  /* Search */
   .search-wrap { position: relative; margin-bottom: 10px; }
-
   .search-icon {
     position: absolute;
-    left: 12px; top: 50%;
+    left: 11px; top: 50%;
     transform: translateY(-50%);
-    width: 16px; height: 16px;
+    width: 15px; height: 15px;
     stroke: var(--muted);
     fill: none;
     stroke-width: 2;
     pointer-events: none;
   }
-
-  #search {
+  #searchInput {
     width: 100%;
-    height: 40px;
-    padding: 0 12px 0 36px;
+    height: 38px;
+    padding: 0 10px 0 34px;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--surface-2);
     color: var(--text);
-    /* font-size >= 16px để iOS KHÔNG tự zoom khi focus */
     font-size: 16px;
+    font-family: inherit;
     outline: none;
     -webkit-appearance: none;
     appearance: none;
-    transition: border-color .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
+    transition: border-color .15s var(--ease), background .15s var(--ease), box-shadow .15s var(--ease);
   }
-  #search::placeholder { color: var(--muted); font-size: 13px; }
-  #search:focus {
-    border-color: var(--primary);
-    background: var(--surface);
-    box-shadow: 0 0 0 3px var(--primary-soft);
-  }
-  #search::-webkit-search-cancel-button { cursor: pointer; }
+  #searchInput::placeholder { color: var(--muted); font-size: 13px; }
+  #searchInput:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--primary-soft); }
+  #searchInput::-webkit-search-cancel-button { cursor: pointer; }
 
-  .progress-box { margin-bottom: 10px; }
+  /* Progress */
   .progress-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 6px;
-    font-size: 12px;
+    font-size: 11.5px;
+    color: var(--text-soft);
+    font-weight: 600;
   }
-  .progress-label { color: var(--text-soft); font-weight: 600; }
   .progress-count { color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
 
   .progress-track {
-    height: 6px;
+    height: 5px;
     border-radius: 999px;
     background: var(--surface-3);
     overflow: hidden;
   }
-
   .progress-fill {
     height: 100%;
     width: 0%;
     border-radius: 999px;
     background: linear-gradient(90deg, var(--green), var(--green-2));
-    transition: width .5s var(--ease);
+    transition: width .4s var(--ease);
   }
 
-  .hint {
-    margin: 6px 0 10px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    background: var(--primary-soft);
-    color: var(--text-soft);
-    font-size: 11px;
-    line-height: 1.4;
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-  }
-  .hint-icon {
-    flex: 0 0 14px;
-    width: 14px; height: 14px;
-    margin-top: 1px;
-    fill: none;
-    stroke: var(--primary);
-    stroke-width: 2;
-    stroke-linecap: round;
-  }
-
-  .actions { display: flex; gap: 8px; }
-
+  .actions-row { display: flex; gap: 6px; margin-top: 10px; }
   .action-btn {
     flex: 1;
-    min-height: 36px;
-    padding: 8px 10px;
+    min-height: 32px;
+    padding: 6px 8px;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: var(--surface-2);
     color: var(--text-soft);
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
     cursor: pointer;
-    transition: all .18s var(--ease);
+    transition: all .15s var(--ease);
   }
   .action-btn:active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
 
-  /* ===== TOC ===== */
-  .toc {
+  /* ============ TOC LIST ============ */
+  .toc-scroll {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding: 8px 10px 20px;
+    padding: 8px 8px calc(24px + env(safe-area-inset-bottom, 0px));
   }
-  .toc::-webkit-scrollbar { width: 6px; }
-  .toc::-webkit-scrollbar-track { background: transparent; }
-  .toc::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
+  .toc-scroll::-webkit-scrollbar { width: 5px; }
+  .toc-scroll::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
 
-  .toc.searching.empty::after {
-    content: 'Không tìm thấy mục nào khớp với tìm kiếm.';
+  .toc-scroll.searching.empty::after {
+    content: 'Không tìm thấy mục nào.';
     display: block;
     padding: 28px 12px;
     text-align: center;
     color: var(--muted);
     font-size: 12.5px;
-    line-height: 1.5;
   }
 
-  .chapter { margin-bottom: 4px; }
+  .chapter { margin-bottom: 2px; }
 
   .chapter-head {
     display: flex;
@@ -309,7 +279,7 @@
     gap: 8px;
     width: 100%;
     min-height: 44px;
-    padding: 10px;
+    padding: 10px 12px;
     border: 0;
     border-radius: 9px;
     background: transparent;
@@ -320,29 +290,18 @@
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
-    transition: background .18s var(--ease);
   }
   .chapter-head:active { background: var(--surface-2); }
 
   .chevron {
-    flex: 0 0 14px;
-    width: 14px; height: 14px;
-    fill: none;
-    stroke: var(--muted);
-    stroke-width: 2.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    flex: 0 0 14px; width: 14px; height: 14px;
+    fill: none; stroke: var(--muted); stroke-width: 2.4;
+    stroke-linecap: round; stroke-linejoin: round;
     transition: transform .25s var(--ease);
   }
   .chapter.collapsed .chevron { transform: rotate(-90deg); }
 
-  .chapter-title {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  .chapter-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .chapter-count {
     flex: 0 0 auto;
@@ -353,19 +312,18 @@
     font-size: 10.5px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    transition: all .2s var(--ease);
   }
   .chapter-count.complete { background: var(--green-soft); color: var(--green); }
 
   .chapter-body {
     display: grid;
     grid-template-rows: 1fr;
-    transition: grid-template-rows .3s var(--ease);
+    transition: grid-template-rows .28s var(--ease);
   }
   .chapter.collapsed .chapter-body { grid-template-rows: 0fr; }
   .chapter-body-inner { overflow: hidden; min-height: 0; }
 
-  .section-list { list-style: none; margin: 0; padding: 0 0 4px 8px; }
+  .section-list { list-style: none; margin: 0; padding: 0 0 4px 6px; }
 
   .section-item {
     display: flex;
@@ -379,32 +337,24 @@
   .section-link {
     flex: 1;
     min-width: 0;
-    min-height: 44px;
+    min-height: 46px;
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 10px 6px 10px 10px;
     color: var(--text-soft);
-    text-decoration: none;
     font-size: 13px;
     line-height: 1.35;
     border-radius: 8px 0 0 8px;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: manipulation;
-    transition: color .15s var(--ease), background .15s var(--ease);
+    transition: color .15s var(--ease);
   }
   .section-link:active { background: var(--surface-3); }
   .section-item.active .section-link { color: var(--primary); font-weight: 600; }
 
-  .section-title {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  .section-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .section-page {
     flex: 0 0 auto;
@@ -414,14 +364,12 @@
     padding: 2px 6px;
     border-radius: 5px;
     background: var(--surface-3);
-    transition: all .15s var(--ease);
   }
   .section-item.active .section-page { background: var(--primary); color: #fff; }
 
   .complete-btn {
     flex: 0 0 48px;
     width: 48px;
-    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -431,11 +379,8 @@
     border-radius: 8px;
     background: transparent;
     cursor: pointer;
-    touch-action: manipulation;
-    transition: background .15s var(--ease);
   }
   .complete-btn:active { background: var(--surface-3); }
-  .complete-btn:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
 
   .check-box {
     width: 24px; height: 24px;
@@ -443,75 +388,128 @@
     border-radius: 7px;
     border: 2px solid var(--border-2);
     background: transparent;
-    transition: background .22s var(--ease), border-color .22s var(--ease), transform .22s var(--ease-spring);
+    transition: background .2s var(--ease), border-color .2s var(--ease), transform .2s var(--spring);
   }
-
   .check-box svg {
     width: 14px; height: 14px;
-    fill: none;
-    stroke: #fff;
-    stroke-width: 3.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 26;
-    stroke-dashoffset: 26;
-    transition: stroke-dashoffset .28s ease .04s;
+    fill: none; stroke: #fff; stroke-width: 3.6;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 26; stroke-dashoffset: 26;
+    transition: stroke-dashoffset .25s ease .04s;
   }
-
-  .complete-btn:active .check-box { border-color: var(--green); }
-
   .section-item.completed .check-box {
     background: linear-gradient(135deg, var(--green), var(--green-2));
     border-color: transparent;
-    transform: scale(1.03);
+    transform: scale(1.02);
   }
   .section-item.completed .check-box svg { stroke-dashoffset: 0; }
-
   .section-item.completed .section-link { color: var(--muted); }
   .section-item.completed .section-title {
     text-decoration: line-through;
     text-decoration-thickness: 1.5px;
     text-decoration-color: var(--muted);
   }
-  .section-item.completed .section-page {
-    opacity: .7;
-    background: var(--surface-3);
-    color: var(--muted);
-  }
-  .section-item.completed.active .section-page {
-    background: var(--primary);
-    color: #fff;
-    opacity: 1;
-  }
+  .section-item.completed .section-page { opacity: .6; }
 
   mark { background: var(--mark); color: inherit; padding: 0 1px; border-radius: 2px; }
 
-  /* ===== CONTENT ===== */
-  .content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    height: 100%;
-    padding-right: env(safe-area-inset-right, 0px);
-  }
-
-  .topbar {
+  /* ============ PDF HEADER ============ */
+  .pdf-head {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 14px;
-    padding-top: env(safe-area-inset-top, 0px);
-    min-height: calc(var(--topbar-h) + env(safe-area-inset-top, 0px));
+    gap: 6px;
+    padding: 8px 10px;
+    min-height: var(--header-h);
     background: var(--surface);
     border-bottom: 1px solid var(--border);
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+    padding-right: calc(10px + env(safe-area-inset-right, 0px));
     position: relative;
-    z-index: 10;
+    z-index: 5;
   }
 
-  .icon-btn {
-    flex: 0 0 auto;
+  .back-btn {
+    display: none; /* Ẩn trên desktop, hiện trên mobile */
+    flex: 0 0 40px;
+    width: 40px; height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all .15s var(--ease);
+  }
+  .back-btn:active { background: var(--surface-3); }
+  .back-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+  .nav-btn {
+    flex: 0 0 38px;
+    width: 38px; height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all .15s var(--ease);
+  }
+  .nav-btn:active:not(:disabled) { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+  .nav-btn:disabled { opacity: 0.3; }
+  .nav-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+  .title-block {
+    flex: 1;
+    min-width: 0;
+    padding: 0 4px;
+  }
+  .title-kicker {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .title-main {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+
+  .pdf-check-btn {
+    flex: 0 0 40px;
+    width: 40px; height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s var(--ease);
+  }
+  .pdf-check-btn:active { transform: scale(0.94); }
+  .pdf-check-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .pdf-check-btn.is-done {
+    background: linear-gradient(135deg, var(--green), var(--green-2));
+    border-color: transparent;
+    color: #fff;
+  }
+
+  .open-ext-btn {
+    flex: 0 0 40px;
     width: 40px; height: 40px;
     display: inline-flex;
     align-items: center;
@@ -521,63 +519,27 @@
     background: var(--surface);
     color: var(--text-soft);
     cursor: pointer;
-    text-decoration: none;
-    touch-action: manipulation;
-    transition: all .18s var(--ease);
+    transition: all .15s var(--ease);
   }
-  .icon-btn:active:not(:disabled) {
-    border-color: var(--primary);
-    color: var(--primary);
-    background: var(--primary-soft);
-    transform: scale(0.96);
-  }
-  .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .icon-btn svg {
-    width: 18px; height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
+  .open-ext-btn:active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+  .open-ext-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  .current {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    padding: 0 4px;
-  }
-  .current-kicker {
-    font-size: 10.5px;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .current-title {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .pdf-wrap {
+  /* ============ PDF BODY ============ */
+  .pdf-body {
     flex: 1;
     position: relative;
     background: #525659;
     min-height: 0;
     overflow: hidden;
   }
-  [data-theme="dark"] .pdf-wrap { background: #1a1a1a; }
+  [data-theme="dark"] .pdf-body { background: #1a1a1a; }
 
-  #pdfFrame { width: 100%; height: 100%; border: 0; display: block; }
+  #pdfFrame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
 
   .pdf-loading {
     position: absolute;
@@ -592,9 +554,9 @@
     font-weight: 600;
     opacity: 0;
     visibility: hidden;
-    transition: opacity .18s var(--ease), visibility .18s var(--ease);
+    transition: opacity .2s var(--ease), visibility .2s var(--ease);
     pointer-events: none;
-    z-index: 5;
+    z-index: 3;
   }
   .pdf-loading.active { opacity: 1; visibility: visible; }
 
@@ -607,230 +569,316 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Nút nổi "Mở PDF" — chỉ mobile */
-  .fab-open {
-    display: none;
+  /* Fallback hint (mobile — sau 3.5s không thấy PDF) */
+  .pdf-fallback {
     position: absolute;
-    right: 16px;
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    height: 48px;
-    padding: 0 18px;
-    border: 0;
-    border-radius: 999px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    font-family: inherit;
-    box-shadow: 0 12px 24px -8px var(--primary-glow), 0 4px 10px rgba(0, 0, 0, 0.15);
-    cursor: pointer;
-    touch-action: manipulation;
-    z-index: 8;
-    display: inline-flex;
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    display: flex;
     align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: transform .15s var(--ease);
-  }
-  .fab-open:active { transform: scale(0.94); }
-  .fab-open svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-
-  #menuToggle { display: none; }
-
-  .icon-sun { display: none; }
-  [data-theme="dark"] .icon-sun { display: block; }
-  [data-theme="dark"] .icon-moon { display: none; }
-
-  .sidebar-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    -webkit-backdrop-filter: blur(3px);
-    backdrop-filter: blur(3px);
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--text);
+    z-index: 6;
     opacity: 0;
     visibility: hidden;
-    transition: opacity .25s var(--ease), visibility .25s var(--ease);
-    z-index: 25;
+    transform: translateY(8px);
+    transition: all .3s var(--ease);
+  }
+  [data-theme="dark"] .pdf-fallback { background: rgba(26, 33, 51, 0.96); }
+  .pdf-fallback.visible { opacity: 1; visibility: visible; transform: none; }
+  .pdf-fallback-icon {
+    flex: 0 0 32px;
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+  .pdf-fallback-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .pdf-fallback-text { flex: 1; line-height: 1.35; }
+  .pdf-fallback-text strong { font-weight: 700; }
+  .pdf-fallback-btn {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .pdf-fallback-btn:active { opacity: .9; }
+
+  /* File protocol warning */
+  .alert-banner {
+    display: none;
+    padding: 10px 12px;
+    background: #fef3c7;
+    color: #78350f;
+    border-bottom: 1px solid #fcd34d;
+    font-size: 12px;
+    line-height: 1.4;
+    gap: 8px;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+  [data-theme="dark"] .alert-banner {
+    background: #3a2a08;
+    color: #fcd34d;
+    border-bottom-color: #78350f;
+  }
+  .alert-banner.show { display: flex; }
+  .alert-banner svg {
+    flex: 0 0 16px;
+    width: 16px; height: 16px;
+    margin-top: 1px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
   }
 
-  /* ===== MOBILE (iPad dọc / iPhone) ===== */
+  /* ============ MOBILE OVERRIDES ============ */
   @media (max-width: 860px) {
-    :root { --sidebar-w: min(360px, 88vw); }
+    .app {
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
 
-    .sidebar {
+    .screen {
       position: fixed;
-      top: 0; left: 0; bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%;
       height: 100dvh;
-      width: var(--sidebar-w);
-      transform: translateX(-100%);
-      transition: transform .3s var(--ease);
-      box-shadow: var(--shadow-lg);
-      z-index: 40;
+      transition: transform .34s var(--ease);
       will-change: transform;
     }
-    .app.sidebar-open .sidebar { transform: translateX(0); }
-    .app.sidebar-open .sidebar-backdrop { opacity: 1; visibility: visible; }
 
-    #menuToggle { display: inline-flex; }
-    .close-sidebar { display: inline-flex; }
-    .fab-open { display: inline-flex; }
+    .screen-toc {
+      transform: translateX(0);
+      border-right: 0;
+      z-index: 20;
+    }
 
-    .topbar { gap: 6px; padding: 0 10px; padding-top: env(safe-area-inset-top, 0px); }
-    .icon-btn { width: 42px; height: 42px; }
+    .screen-pdf {
+      transform: translateX(100%);
+      z-index: 30;
+      box-shadow: -12px 0 32px rgba(0, 0, 0, 0.18);
+    }
 
-    .hint { font-size: 11.5px; }
+    .app.pdf-open .screen-pdf { transform: translateX(0); }
 
-    /* Gợi ý chạm thay vì hover */
-    .section-item:active:not(.active) { background: var(--surface-2); }
+    /* Hiện back button trên mobile */
+    .back-btn { display: inline-flex; }
+
+    /* Nút check trong header PDF chỉ hiện trên mobile */
+    .pdf-check-btn { display: inline-flex; }
+
+    /* Ẩn nút "Mở rộng" chỉ-dành-desktop trong header PDF mobile nếu không cần */
+    /* Trên mobile, "Mở rộng" là nút chính để thoát khỏi iframe lỗi */
+    .open-ext-btn {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Tăng kích thước touch */
+    .nav-btn { width: 42px; height: 42px; flex-basis: 42px; }
+    .back-btn { width: 42px; height: 42px; flex-basis: 42px; }
+    .pdf-check-btn { width: 42px; height: 42px; flex-basis: 42px; }
+    .open-ext-btn { width: 42px; height: 42px; flex-basis: 42px; }
   }
 
-  /* iOS không có hover — chỉ có :active */
+  @media (min-width: 861px) {
+    /* Trên desktop ẩn nút check trong header PDF (đã có trong TOC) */
+    .pdf-check-btn { display: none; }
+  }
+
+  /* ============ VÙNG VUỐT CẠNH TRÁI (đóng PDF trên mobile) ============ */
+  .edge-swipe {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 22px;
+    z-index: 15;
+    touch-action: pan-y;
+  }
+
+  @media (max-width: 860px) {
+    .edge-swipe { display: block; }
+  }
+
+  /* ============ iOS SMALL / OLD ============ */
+  @supports not (height: 100dvh) {
+    @media (max-width: 860px) {
+      .screen { height: 100vh; }
+    }
+  }
+
+  @media (max-width: 380px) {
+    .toc-head { padding: 12px 12px 10px; }
+    .brand-title { font-size: 14px; }
+    .brand-logo { width: 36px; height: 36px; font-size: 19px; }
+    .section-link { font-size: 12.5px; padding: 9px 4px 9px 8px; }
+    .section-page { font-size: 10px; padding: 1px 5px; }
+    .title-main { font-size: 12.5px; }
+    .title-kicker { font-size: 9.5px; }
+    .pdf-head { gap: 4px; padding: 6px 8px; padding-top: calc(6px + env(safe-area-inset-top, 0px)); }
+    .nav-btn, .back-btn, .pdf-check-btn, .open-ext-btn {
+      width: 38px; height: 38px; flex-basis: 38px;
+    }
+  }
+
+  /* Landscape phone */
+  @media (max-height: 480px) and (orientation: landscape) {
+    .toc-head { padding-top: 8px; padding-bottom: 8px; }
+    .brand-row { margin-bottom: 8px; }
+    .brand-logo { width: 32px; height: 32px; font-size: 17px; border-radius: 9px; }
+    .brand-sub { display: none; }
+    .actions-row { display: none; }
+    .search-wrap { margin-bottom: 6px; }
+    #searchInput { height: 34px; font-size: 15px; }
+    .progress-row { margin-bottom: 3px; }
+  }
+
   @media (hover: hover) {
     .chapter-head:hover { background: var(--surface-2); }
     .section-item:hover { background: var(--surface-2); }
-    .section-link:hover { color: var(--text); }
-    .complete-btn:hover { background: var(--surface-3); }
-    .complete-btn:hover .check-box { border-color: var(--green); }
-    .icon-btn:hover:not(:disabled) {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: var(--primary-soft);
-    }
-    .action-btn:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: var(--primary-soft);
-    }
+    .icon-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+    .action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
   }
 
-  @media (max-width: 480px) {
-    .current-title { font-size: 13px; }
-    .current-kicker { font-size: 10px; }
-    #newTabBtn { display: none; }
-    .section-link { font-size: 13.5px; }
-  }
-
-  /* Màn hình thấp (landscape iPhone) */
-  @media (max-height: 450px) and (orientation: landscape) {
-    :root { --topbar-h: 48px; }
-    .sidebar-head { padding-top: 8px; padding-bottom: 8px; }
-    .brand { margin-bottom: 8px; }
-    .brand-logo { width: 34px; height: 34px; font-size: 18px; border-radius: 10px; }
-    .hint { display: none; }
-  }
-
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: .001ms !important;
-      animation-iteration-count: 1 !important;
       transition-duration: .001ms !important;
     }
-  }
-
-  /* Print */
-  @media print {
-    .sidebar, .topbar, .fab-open, .pdf-loading { display: none !important; }
-    .content { height: auto; }
   }
 </style>
 </head>
 <body>
 
 <noscript>
-  <div style="position:fixed;inset:0;display:grid;place-items:center;background:#f4f6fa;z-index:9999;font-family:sans-serif;text-align:center;padding:20px;">
+  <div style="position:fixed;inset:0;display:grid;place-items:center;background:#f4f6fa;padding:20px;text-align:center;font-family:sans-serif;z-index:9999;">
     <div>
       <h2 style="color:#d32f2f;margin:0 0 10px;">Cần bật JavaScript</h2>
-      <p style="color:#666;margin:0;">Giao diện mục lục thông minh yêu cầu JavaScript để hoạt động.</p>
+      <p style="color:#666;margin:0;">Ứng dụng cần JavaScript để hoạt động.</p>
     </div>
   </div>
 </noscript>
 
 <div class="app" id="app">
-  <aside class="sidebar" id="sidebar" aria-label="Mục lục">
-    <div class="sidebar-head">
-      <div class="brand">
+
+  <!-- ============ MÀN HÌNH 1: MỤC LỤC ============ -->
+  <section class="screen screen-toc" id="screenToc">
+    <header class="toc-head">
+      <div class="brand-row">
         <div class="brand-logo" aria-hidden="true">∫</div>
         <div class="brand-text">
           <div class="brand-title">Giải tích 1</div>
           <div class="brand-sub">Giải tích hàm một biến số</div>
         </div>
-        <button class="close-sidebar" id="closeSidebar" type="button" aria-label="Đóng mục lục">
-          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18L18 6"/></svg>
+        <button class="icon-btn" id="themeToggle" type="button" aria-label="Đổi giao diện">
+          <svg class="icon-moon" viewBox="0 0 24 24"><path d="M20.5 14.6A8.5 8.5 0 1 1 9.4 3.5a7 7 0 0 0 11.1 11.1z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
         </button>
       </div>
 
       <div class="search-wrap">
         <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="search" id="search" placeholder="Tìm mục... (nhấn /)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input type="search" id="searchInput" placeholder="Tìm mục..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
       </div>
 
-      <div class="progress-box">
-        <div class="progress-row">
-          <span class="progress-label">Đã học xong</span>
-          <span class="progress-count" id="doneText">0/0</span>
-        </div>
-        <div class="progress-track"><div class="progress-fill" id="doneBar"></div></div>
+      <div class="progress-row">
+        <span>Đã học xong</span>
+        <span class="progress-count" id="doneText">0/0</span>
       </div>
+      <div class="progress-track"><div class="progress-fill" id="doneBar"></div></div>
 
-      <div class="hint">
-        <svg class="hint-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
-        <span>Bấm <strong>tiêu đề</strong> để mở trang PDF · Bấm <strong>ô vuông</strong> bên phải để đánh dấu.</span>
-      </div>
-
-      <div class="actions">
+      <div class="actions-row">
         <button class="action-btn" id="expandAll" type="button">Mở tất cả</button>
         <button class="action-btn" id="collapseAll" type="button">Thu gọn</button>
       </div>
+    </header>
+
+    <nav class="toc-scroll" id="tocScroll" aria-label="Mục lục"></nav>
+  </section>
+
+  <!-- ============ MÀN HÌNH 2: PDF ============ -->
+  <section class="screen screen-pdf" id="screenPdf">
+
+    <!-- Cảnh báo file:// trên mobile -->
+    <div class="alert-banner" id="fileWarning">
+      <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+      <span>Bạn đang mở trực tiếp file HTML. Hãy dùng nút <strong>Mở ngoài</strong> (↗) để xem PDF, hoặc đặt file trên web server.</span>
     </div>
 
-    <nav class="toc" id="toc" aria-label="Danh sách bài học"></nav>
-  </aside>
-
-  <div class="sidebar-backdrop" id="backdrop"></div>
-
-  <main class="content">
-    <header class="topbar">
-      <button class="icon-btn" id="menuToggle" type="button" aria-label="Mở mục lục">
-        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
-
-      <button class="icon-btn" id="prevBtn" type="button" aria-label="Mục trước" title="Mục trước ([)">
+    <header class="pdf-head">
+      <button class="back-btn" id="backBtn" type="button" aria-label="Quay lại mục lục">
         <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
 
-      <div class="current">
-        <span class="current-kicker" id="currentKicker">Bắt đầu</span>
-        <span class="current-title" id="currentTitle">Chọn một mục để bắt đầu</span>
+      <button class="nav-btn" id="prevBtn" type="button" aria-label="Mục trước" title="Mục trước">
+        <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+
+      <div class="title-block">
+        <div class="title-kicker" id="currentKicker">Bắt đầu</div>
+        <div class="title-main" id="currentTitle">Chọn một mục</div>
       </div>
 
-      <button class="icon-btn" id="nextBtn" type="button" aria-label="Mục tiếp" title="Mục tiếp (])">
+      <button class="nav-btn" id="nextBtn" type="button" aria-label="Mục tiếp" title="Mục tiếp">
         <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
       </button>
 
-      <a class="icon-btn" id="newTabBtn" href="#" target="_blank" rel="noopener"
-         title="Mở PDF trong tab mới" aria-label="Mở PDF trong tab mới">
+      <button class="pdf-check-btn" id="pdfCheckBtn" type="button" aria-label="Đánh dấu đã học" aria-pressed="false">
+        <svg viewBox="0 0 24 24"><path d="M4 12.6l5.2 5.2L20 6.6"/></svg>
+      </button>
+
+      <a class="open-ext-btn" id="openExtBtn" href="#" target="_blank" rel="noopener" aria-label="Mở PDF ngoài" title="Mở bằng trình xem PDF">
         <svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>
       </a>
-
-      <button class="icon-btn" id="themeToggle" type="button" aria-label="Đổi giao diện" title="Đổi giao diện sáng / tối">
-        <svg class="icon-moon" viewBox="0 0 24 24"><path d="M20.5 14.6A8.5 8.5 0 1 1 9.4 3.5a7 7 0 0 0 11.1 11.1z"/></svg>
-        <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
-      </button>
     </header>
 
-    <div class="pdf-wrap">
-      <iframe name="khung_pdf" id="pdfFrame" title="Nội dung PDF" loading="eager"></iframe>
+    <div class="pdf-body" id="pdfBody">
+      <iframe id="pdfFrame" title="Nội dung PDF" loading="eager"></iframe>
+
       <div class="pdf-loading" id="pdfLoading">
         <div class="spinner"></div>
         <span>Đang mở trang...</span>
       </div>
-      <a class="fab-open" id="fabOpen" href="#" target="_blank" rel="noopener" aria-label="Mở PDF toàn màn hình">
-        <svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>
-        Mở toàn màn hình
-      </a>
+
+      <!-- Fallback hint: hiện sau 3.5s nếu PDF không load -->
+      <div class="pdf-fallback" id="pdfFallback">
+        <div class="pdf-fallback-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+        <div class="pdf-fallback-text">
+          <strong>PDF không hiển thị?</strong><br>
+          Thử mở bằng ứng dụng xem PDF.
+        </div>
+        <button class="pdf-fallback-btn" id="fallbackOpen" type="button">Mở ngoài</button>
+      </div>
+
+      <!-- Vùng vuốt cạnh trái để đóng PDF trên mobile -->
+      <div class="edge-swipe" id="edgeSwipe" aria-hidden="true"></div>
     </div>
-  </main>
+  </section>
+
 </div>
 
 <script>
@@ -904,7 +952,7 @@
     });
   });
 
-  /* ============ STORAGE ============ */
+  /* ============ STORAGE KEYS ============ */
   const KEY_THEME     = 'giaotich1.viewer.theme';
   const KEY_DONE      = 'giaotich1.viewer.done';
   const KEY_LAST      = 'giaotich1.viewer.last';
@@ -917,29 +965,35 @@
   let filteredQuery = '';
   let hasNavigated = false;
   let loadingTimer = null;
+  let fallbackTimer = null;
+  let isMobile = window.matchMedia('(max-width: 860px)').matches;
 
   /* ============ ELEMENTS ============ */
   const app            = document.getElementById('app');
-  const sidebar        = document.getElementById('sidebar');
-  const tocEl          = document.getElementById('toc');
-  const searchEl       = document.getElementById('search');
-  const iframe         = document.getElementById('pdfFrame');
+  const screenToc      = document.getElementById('screenToc');
+  const screenPdf      = document.getElementById('screenPdf');
+  const tocScroll      = document.getElementById('tocScroll');
+  const searchInput    = document.getElementById('searchInput');
+  const pdfFrame       = document.getElementById('pdfFrame');
+  const pdfBody        = document.getElementById('pdfBody');
   const pdfLoading     = document.getElementById('pdfLoading');
+  const pdfFallback    = document.getElementById('pdfFallback');
+  const fileWarning    = document.getElementById('fileWarning');
   const doneBar        = document.getElementById('doneBar');
   const doneText       = document.getElementById('doneText');
   const currentKicker  = document.getElementById('currentKicker');
   const currentTitle   = document.getElementById('currentTitle');
   const prevBtn        = document.getElementById('prevBtn');
   const nextBtn        = document.getElementById('nextBtn');
-  const newTabBtn      = document.getElementById('newTabBtn');
-  const fabOpen        = document.getElementById('fabOpen');
+  const backBtn        = document.getElementById('backBtn');
+  const pdfCheckBtn    = document.getElementById('pdfCheckBtn');
+  const openExtBtn     = document.getElementById('openExtBtn');
+  const fallbackOpen   = document.getElementById('fallbackOpen');
   const themeToggle    = document.getElementById('themeToggle');
   const themeColorMeta = document.getElementById('themeColorMeta');
-  const menuToggle     = document.getElementById('menuToggle');
-  const closeSidebar   = document.getElementById('closeSidebar');
-  const backdrop       = document.getElementById('backdrop');
   const expandAllBtn   = document.getElementById('expandAll');
   const collapseAllBtn = document.getElementById('collapseAll');
+  const edgeSwipe      = document.getElementById('edgeSwipe');
 
   /* ============ HELPERS ============ */
   function escapeHtml(s) {
@@ -948,9 +1002,14 @@
     });
   }
 
+  // URL an toàn cho iframe và link ngoài
   function pageUrl(page) {
+    // encodeURI xử lý khoảng trắng, dấu ngoặc, tiếng Việt
     return encodeURI(PDF_FILE) + '#page=' + page;
   }
+
+  // URL cho Google Docs viewer (dùng khi cần fallback trên mobile nếu có public URL)
+  // Không dùng ở đây, nhưng để sẵn nếu cần mở rộng.
 
   function highlightMatch(text, query) {
     if (!query) return escapeHtml(text);
@@ -970,11 +1029,11 @@
 
   /* ============ BUILD TOC ============ */
   function buildTOC() {
-    tocEl.innerHTML = TOC.map(function (ch, ci) {
+    tocScroll.innerHTML = TOC.map(function (ch, ci) {
       const sectionsHtml = ch.sections.map(function (s, si) {
         const id = 's-' + ci + '-' + si;
         return '<li class="section-item" data-id="' + id + '">' +
-          '<a class="section-link" href="' + pageUrl(s.page) + '" target="khung_pdf" data-page="' + s.page + '">' +
+          '<a class="section-link" href="' + pageUrl(s.page) + '" target="_blank" rel="noopener" data-page="' + s.page + '">' +
             '<span class="section-title">' + escapeHtml(s.title) + '</span>' +
             '<span class="section-page">tr. ' + s.page + '</span>' +
           '</a>' +
@@ -1001,7 +1060,7 @@
     }).join('');
   }
 
-  /* ============ LOAD STATE ============ */
+  /* ============ STATE ============ */
   function loadState() {
     try {
       const arr = JSON.parse(localStorage.getItem(KEY_DONE) || '[]');
@@ -1013,7 +1072,7 @@
       collapsed = new Set(arr.filter(function (i) { return Number.isInteger(i); }));
     } catch (e) { collapsed = new Set(); }
 
-    tocEl.querySelectorAll('.chapter').forEach(function (chEl) {
+    tocScroll.querySelectorAll('.chapter').forEach(function (chEl) {
       const idx = Number(chEl.dataset.chapterIdx);
       if (collapsed.has(idx)) {
         chEl.classList.add('collapsed');
@@ -1036,7 +1095,7 @@
 
   /* ============ COMPLETED ============ */
   function applyCompletedState() {
-    tocEl.querySelectorAll('.section-item').forEach(function (item) {
+    tocScroll.querySelectorAll('.section-item').forEach(function (item) {
       const isDone = completed.has(item.dataset.id);
       item.classList.toggle('completed', isDone);
       const btn = item.querySelector('.complete-btn');
@@ -1044,10 +1103,11 @@
       btn.title = isDone ? 'Bỏ đánh dấu hoàn thành' : 'Đánh dấu đã học';
     });
     updateProgressUI();
+    updatePdfCheckBtn();
   }
 
   function updateProgressUI() {
-    tocEl.querySelectorAll('.chapter').forEach(function (chEl) {
+    tocScroll.querySelectorAll('.chapter').forEach(function (chEl) {
       const idx = Number(chEl.dataset.chapterIdx);
       const ch = TOC[idx];
       let count = 0;
@@ -1067,7 +1127,7 @@
   }
 
   function toggleComplete(id) {
-    const item = tocEl.querySelector('.section-item[data-id="' + id + '"]');
+    const item = tocScroll.querySelector('.section-item[data-id="' + id + '"]');
     if (!item) return;
 
     if (completed.has(id)) {
@@ -1076,8 +1136,7 @@
     } else {
       completed.add(id);
       item.classList.add('completed');
-      // Rung nhẹ nếu hỗ trợ (chủ yếu Android; iOS Safari chưa hỗ trợ)
-      if (navigator.vibrate) { try { navigator.vibrate(10); } catch (e) {} }
+      if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
     }
 
     const btn = item.querySelector('.complete-btn');
@@ -1087,18 +1146,36 @@
 
     saveDone();
     updateProgressUI();
+    updatePdfCheckBtn();
+  }
+
+  function updatePdfCheckBtn() {
+    if (!activeId) {
+      pdfCheckBtn.classList.remove('is-done');
+      pdfCheckBtn.setAttribute('aria-pressed', 'false');
+      return;
+    }
+    const isDone = completed.has(activeId);
+    pdfCheckBtn.classList.toggle('is-done', isDone);
+    pdfCheckBtn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
+    pdfCheckBtn.setAttribute('aria-label', isDone ? 'Bỏ đánh dấu đã học' : 'Đánh dấu đã học');
   }
 
   /* ============ ACTIVE / NAV ============ */
   function updateActiveUI() {
-    tocEl.querySelectorAll('.section-item').forEach(function (el) {
+    tocScroll.querySelectorAll('.section-item').forEach(function (el) {
       el.classList.toggle('active', el.dataset.id === activeId);
     });
     updateNavButtons();
+    updatePdfCheckBtn();
   }
 
   function updateNavButtons() {
-    if (!activeId) { prevBtn.disabled = true; nextBtn.disabled = true; return; }
+    if (!activeId) {
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
+    }
     const idx = FLAT.findIndex(function (s) { return s.id === activeId; });
     prevBtn.disabled = idx <= 0;
     nextBtn.disabled = idx === -1 || idx >= FLAT.length - 1;
@@ -1108,8 +1185,10 @@
     if (!sec) return;
     currentKicker.textContent = 'Chương ' + (sec.chapterIdx + 1) + ' · Trang ' + sec.page;
     currentTitle.textContent = sec.title;
-    newTabBtn.href = pageUrl(sec.page);
-    fabOpen.href = pageUrl(sec.page);
+    openExtBtn.href = pageUrl(sec.page);
+    fallbackOpen.onclick = function () {
+      window.open(pageUrl(sec.page), '_blank', 'noopener');
+    };
   }
 
   /* ============ IFRAME NAVIGATION ============ */
@@ -1127,37 +1206,79 @@
     pdfLoading.classList.remove('active');
   }
 
+  function showFallbackHint() {
+    clearTimeout(fallbackTimer);
+    pdfFallback.classList.remove('visible');
+    fallbackTimer = setTimeout(function () {
+      pdfFallback.classList.add('visible');
+    }, 3500);
+  }
+
+  function hideFallbackHint() {
+    clearTimeout(fallbackTimer);
+    pdfFallback.classList.remove('visible');
+  }
+
   function setIframePage(page) {
     const url = pageUrl(page);
 
+    // Lần đầu: nạp trực tiếp (trình xem PDF xử lý #page khi khởi tạo)
     if (!hasNavigated) {
       hasNavigated = true;
-      iframe.src = url;
+      pdfFrame.src = url;
+      showFallbackHint();
       return;
     }
 
-    // Buộc reload: gán about:blank để nhả PDF viewer cũ,
-    // sau đó mới gán URL mới có #page=N (nếu không, iOS/Chrome sẽ
-    // coi là đổi fragment và KHÔNG nhảy trang).
+    // Buộc reload: về about:blank rồi gán URL mới để trình duyệt
+    // không coi là "chỉ đổi fragment" (nếu không sẽ đứng ở trang cũ).
     showLoading(page);
-    iframe.src = 'about:blank';
-    setTimeout(function () { iframe.src = url; }, 40);
+    hideFallbackHint();
+    pdfFrame.src = 'about:blank';
+
+    // Delay 60ms đủ để Safari iOS/Chrome Android nhả PDF viewer cũ
+    setTimeout(function () {
+      pdfFrame.src = url;
+      showFallbackHint();
+    }, 60);
+
     setTimeout(hideLoading, 2200);
   }
 
-  iframe.addEventListener('load', function () {
-    if (iframe.src && iframe.src.indexOf('about:blank') === -1 && hasNavigated) {
-      setTimeout(hideLoading, 120);
+  // Khi iframe load xong URL thật → ẩn loading và ẩn hint fallback
+  pdfFrame.addEventListener('load', function () {
+    const src = pdfFrame.src || '';
+    if (src && src.indexOf('about:blank') === -1) {
+      // Có thể là load thành công hoặc load lỗi — đều ẩn loading.
+      setTimeout(hideLoading, 100);
+      // Không ẩn hint fallback ngay, để người dùng tự thấy và bấm
+      // (vì load event cũng fire cả khi PDF lỗi trắng).
     }
   });
 
-  /* ============ SCROLL / NAVIGATE ============ */
+  // Bấm vào vùng PDF → ẩn hint fallback (người dùng đã tương tác được)
+  pdfBody.addEventListener('touchstart', function () {
+    hideFallbackHint();
+  }, { passive: true, once: true });
+
+  /* ============ MOBILE: MỞ / ĐÓNG OVERLAY PDF ============ */
+  function openPdfView() {
+    app.classList.add('pdf-open');
+  }
+
+  function closePdfView() {
+    app.classList.remove('pdf-open');
+    hideFallbackHint();
+  }
+
+  /* ============ SCROLL ============ */
   function scrollActiveIntoView() {
     if (!activeId) return;
-    const el = tocEl.querySelector('.section-item[data-id="' + activeId + '"]');
+    const el = tocScroll.querySelector('.section-item[data-id="' + activeId + '"]');
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
+  /* ============ NAVIGATE ============ */
   function navigateTo(id, opts) {
     opts = opts || {};
     const sec = BY_ID[id];
@@ -1173,12 +1294,13 @@
     updateTopbar(sec);
     saveLast();
 
-    if (window.matchMedia('(max-width: 860px)').matches) {
-      app.classList.remove('sidebar-open');
+    // Trên mobile: mở overlay PDF
+    if (isMobile) {
+      openPdfView();
     }
 
     if (opts.scroll !== false) {
-      if (wasCollapsed) setTimeout(scrollActiveIntoView, 320);
+      if (wasCollapsed) setTimeout(scrollActiveIntoView, 300);
       else requestAnimationFrame(scrollActiveIntoView);
     }
   }
@@ -1186,18 +1308,18 @@
   function goPrev() {
     if (!activeId) return;
     const idx = FLAT.findIndex(function (s) { return s.id === activeId; });
-    if (idx > 0) navigateTo(FLAT[idx - 1].id);
+    if (idx > 0) navigateTo(FLAT[idx - 1].id, { scroll: false });
   }
 
   function goNext() {
     if (!activeId) return;
     const idx = FLAT.findIndex(function (s) { return s.id === activeId; });
-    if (idx >= 0 && idx < FLAT.length - 1) navigateTo(FLAT[idx + 1].id);
+    if (idx >= 0 && idx < FLAT.length - 1) navigateTo(FLAT[idx + 1].id, { scroll: false });
   }
 
-  /* ============ CHAPTERS ============ */
+  /* ============ CHAPTER TOGGLE ============ */
   function toggleChapter(idx, forceState) {
-    const chEl = tocEl.querySelector('.chapter[data-chapter-idx="' + idx + '"]');
+    const chEl = tocScroll.querySelector('.chapter[data-chapter-idx="' + idx + '"]');
     if (!chEl) return;
 
     let isCollapsed;
@@ -1223,8 +1345,8 @@
     const q = filteredQuery.toLowerCase();
 
     if (!q) {
-      tocEl.classList.remove('searching', 'empty');
-      tocEl.querySelectorAll('.chapter').forEach(function (chEl) {
+      tocScroll.classList.remove('searching', 'empty');
+      tocScroll.querySelectorAll('.chapter').forEach(function (chEl) {
         const idx = Number(chEl.dataset.chapterIdx);
         chEl.style.display = '';
         chEl.querySelectorAll('.section-item').forEach(function (secEl) {
@@ -1232,25 +1354,16 @@
           const sec = BY_ID[secEl.dataset.id];
           secEl.querySelector('.section-title').innerHTML = escapeHtml(sec.title);
         });
-        if (collapsed.has(idx)) {
-          chEl.classList.add('collapsed');
-          chEl.querySelector('.chapter-head').setAttribute('aria-expanded', 'false');
-        } else {
-          chEl.classList.remove('collapsed');
-          chEl.querySelector('.chapter-head').setAttribute('aria-expanded', 'true');
-        }
+        if (collapsed.has(idx)) chEl.classList.add('collapsed');
+        else chEl.classList.remove('collapsed');
       });
-      if (activeId) {
-        const el = tocEl.querySelector('.section-item[data-id="' + activeId + '"]');
-        if (el) el.scrollIntoView({ block: 'nearest' });
-      }
       return;
     }
 
-    tocEl.classList.add('searching');
+    tocScroll.classList.add('searching');
     let anyVisible = false;
 
-    tocEl.querySelectorAll('.chapter').forEach(function (chEl) {
+    tocScroll.querySelectorAll('.chapter').forEach(function (chEl) {
       let visibleCount = 0;
       chEl.querySelectorAll('.section-item').forEach(function (secEl) {
         const sec = BY_ID[secEl.dataset.id];
@@ -1263,23 +1376,25 @@
       });
       chEl.style.display = visibleCount > 0 ? '' : 'none';
       chEl.classList.remove('collapsed');
-      chEl.querySelector('.chapter-head').setAttribute('aria-expanded', 'true');
       if (visibleCount > 0) anyVisible = true;
     });
 
-    tocEl.classList.toggle('empty', !anyVisible);
+    tocScroll.classList.toggle('empty', !anyVisible);
   }
 
   /* ============ EVENTS ============ */
-  tocEl.addEventListener('click', function (e) {
+  tocScroll.addEventListener('click', function (e) {
+    // Ô đánh dấu hoàn thành → toggle, KHÔNG điều hướng
     const completeBtn = e.target.closest('.complete-btn');
     if (completeBtn) {
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
       const item = completeBtn.closest('.section-item');
       if (item) toggleComplete(item.dataset.id);
       return;
     }
 
+    // Header chương → mở/đóng
     const head = e.target.closest('.chapter-head');
     if (head) {
       if (filteredQuery) return;
@@ -1288,8 +1403,10 @@
       return;
     }
 
+    // Link mục → điều hướng PDF
     const link = e.target.closest('.section-link');
     if (link) {
+      // Ctrl/Cmd click để mở tab mới (desktop)
       if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       const item = link.closest('.section-item');
@@ -1297,20 +1414,46 @@
     }
   });
 
-  searchEl.addEventListener('input', function () { filterTOC(this.value); });
+  searchInput.addEventListener('input', function () {
+    filterTOC(this.value);
+  });
 
-  // iOS: bỏ focus ô tìm kiếm sau khi gõ xong để ẩn bàn phím
-  searchEl.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
+  // iOS: bấm Enter/Go trên bàn phím → ẩn bàn phím
+  searchInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      this.blur();
+    }
   });
 
   prevBtn.addEventListener('click', goPrev);
   nextBtn.addEventListener('click', goNext);
 
+  backBtn.addEventListener('click', closePdfView);
+
+  pdfCheckBtn.addEventListener('click', function () {
+    if (activeId) toggleComplete(activeId);
+  });
+
+  fallbackOpen.addEventListener('click', function () {
+    if (activeId) {
+      const sec = BY_ID[activeId];
+      window.open(pageUrl(sec.page), '_blank', 'noopener');
+    }
+  });
+
   function applyThemeColor() {
     if (!themeColorMeta) return;
     const isDark = document.documentElement.dataset.theme === 'dark';
     themeColorMeta.setAttribute('content', isDark ? '#131826' : '#ffffff');
+    document.querySelectorAll('.icon-sun, .icon-moon').forEach(function (svg) {
+      // icon-sun hiện ở dark, icon-moon hiện ở light
+      if (svg.classList.contains('icon-sun')) {
+        svg.style.display = isDark ? 'block' : 'none';
+      } else if (svg.classList.contains('icon-moon')) {
+        svg.style.display = isDark ? 'none' : 'block';
+      }
+    });
   }
 
   themeToggle.addEventListener('click', function () {
@@ -1319,13 +1462,6 @@
     try { localStorage.setItem(KEY_THEME, next); } catch (e) {}
     applyThemeColor();
   });
-
-  function openSidebar() { app.classList.add('sidebar-open'); }
-  function closeSidebarFn() { app.classList.remove('sidebar-open'); }
-
-  menuToggle.addEventListener('click', openSidebar);
-  closeSidebar.addEventListener('click', closeSidebarFn);
-  backdrop.addEventListener('click', closeSidebarFn);
 
   expandAllBtn.addEventListener('click', function () {
     if (filteredQuery) return;
@@ -1337,45 +1473,59 @@
     TOC.forEach(function (_, idx) { toggleChapter(idx, 'close'); });
   });
 
-  /* ============ SWIPE TO CLOSE SIDEBAR (iOS) ============ */
-  (function initSwipe() {
-    let startX = 0, startY = 0, tracking = false;
-    sidebar.addEventListener('touchstart', function (e) {
+  /* ============ SWIPE EDGE TO CLOSE PDF (mobile) ============ */
+  (function initEdgeSwipe() {
+    let startX = 0, startY = 0, tracking = false, moved = false;
+
+    edgeSwipe.addEventListener('touchstart', function (e) {
       if (e.touches.length !== 1) return;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       tracking = true;
+      moved = false;
     }, { passive: true });
 
-    sidebar.addEventListener('touchend', function (e) {
+    edgeSwipe.addEventListener('touchmove', function (e) {
+      if (!tracking) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = Math.abs(e.touches[0].clientY - startY);
+      if (dx > 20 && Math.abs(dx) > dy) {
+        moved = true;
+        // Có thể thêm hiệu ứng kéo nếu muốn
+      }
+    }, { passive: true });
+
+    edgeSwipe.addEventListener('touchend', function (e) {
       if (!tracking) return;
       tracking = false;
       const dx = e.changedTouches[0].clientX - startX;
       const dy = Math.abs(e.changedTouches[0].clientY - startY);
-      // Vuốt sang trái đủ xa và không phải cuộn dọc → đóng
-      if (dx < -70 && dy < 50 && app.classList.contains('sidebar-open')) {
-        closeSidebarFn();
+      if (moved && dx > 80 && dy < 60) {
+        closePdfView();
       }
     }, { passive: true });
   })();
 
-  /* ============ KEYBOARD ============ */
+  /* ============ KEYBOARD SHORTCUTS ============ */
   document.addEventListener('keydown', function (e) {
     const isInput = e.target.matches('input, textarea, [contenteditable]');
 
     if (e.key === '/' && !isInput) {
       e.preventDefault();
-      searchEl.focus(); searchEl.select();
+      searchInput.focus();
+      searchInput.select();
       return;
     }
 
     if (e.key === 'Escape') {
-      if (document.activeElement === searchEl) {
-        searchEl.value = ''; filterTOC(''); searchEl.blur();
+      if (document.activeElement === searchInput) {
+        searchInput.value = '';
+        filterTOC('');
+        searchInput.blur();
         return;
       }
-      if (app.classList.contains('sidebar-open')) {
-        app.classList.remove('sidebar-open');
+      if (app.classList.contains('pdf-open')) {
+        closePdfView();
       }
       return;
     }
@@ -1386,40 +1536,59 @@
     }
   });
 
-  /* ============ iOS 100vh FIX ============ */
-  // Khi thanh địa chỉ Safari ẩn/hiện, dvh tự cập nhật — không cần JS.
-  // Nhưng nếu trình duyệt cũ không hỗ trợ dvh, dùng JS fallback:
-  function syncViewportHeight() {
-    if (CSS && CSS.supports && CSS.supports('height', '100dvh')) return; // browser đã hỗ trợ
-    const h = window.innerHeight + 'px';
-    document.documentElement.style.setProperty('--app-h', h);
-    app.style.height = h;
+  /* ============ DETECT MOBILE / RESIZE ============ */
+  function checkMobile() {
+    isMobile = window.matchMedia('(max-width: 860px)').matches;
+    if (!isMobile) {
+      // Chuyển sang desktop → đóng overlay nếu đang mở
+      app.classList.remove('pdf-open');
+    }
   }
-  window.addEventListener('resize', syncViewportHeight);
+  window.addEventListener('resize', checkMobile);
   window.addEventListener('orientationchange', function () {
-    setTimeout(syncViewportHeight, 200);
+    setTimeout(checkMobile, 200);
   });
-  syncViewportHeight();
+
+  /* ============ FILE:// WARNING ============ */
+  function checkFileProtocol() {
+    if (location.protocol === 'file:' && isMobile) {
+      fileWarning.classList.add('show');
+    }
+  }
 
   /* ============ INIT ============ */
   function init() {
     buildTOC();
     loadState();
     updateActiveUI();
-    updateNavButtons();
     applyThemeColor();
+    checkFileProtocol();
 
     let lastId = null;
     try { lastId = localStorage.getItem(KEY_LAST); } catch (e) {}
 
     if (lastId && BY_ID[lastId]) {
-      navigateTo(lastId, { scroll: true });
+      // Nếu là mobile: chỉ đánh dấu active, KHÔNG tự mở PDF
+      if (isMobile) {
+        activeId = lastId;
+        updateActiveUI();
+        updateTopbar(BY_ID[lastId]);
+        // Chưa setIframePage — đợi người dùng bấm
+        // Nhưng vẫn cần preload URL cho openExtBtn
+        openExtBtn.href = pageUrl(BY_ID[lastId].page);
+      } else {
+        navigateTo(lastId);
+      }
     } else if (FLAT.length > 0) {
       const first = FLAT[0];
       activeId = first.id;
-      setIframePage(first.page);
       updateActiveUI();
       updateTopbar(first);
+      if (!isMobile) {
+        setIframePage(first.page);
+      } else {
+        openExtBtn.href = pageUrl(first.page);
+      }
     }
   }
 
